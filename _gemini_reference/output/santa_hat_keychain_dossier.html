@@ -1,0 +1,1260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Santa Hat Keychain — CrocTech Engineering Dossier</title>
+    <style>
+        :root {
+            --bg-primary: #0b0f19;
+            --bg-card: #151d30;
+            --bg-inner: #1a243d;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f1f5f9;
+            --text-dim: #94a3b8;
+            --border: #22304d;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            margin: 0;
+            padding: 30px 20px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+        .brand {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: var(--accent-cyan);
+        }
+        .brand span { color: #ffffff; }
+        .badge {
+            padding: 4px 12px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: bold;
+            display: inline-block;
+        }
+        .status-verified {
+            background: rgba(16, 185, 129, 0.2);
+            color: #34d399;
+            border: 1px solid #10b981;
+            font-size: 14px;
+            padding: 6px 16px;
+        }
+        .status-failed {
+            background: rgba(239, 68, 68, 0.2);
+            color: #f87171;
+            border: 1px solid #ef4444;
+        }
+        .badge-valid { background: #064e3b; color: #6ee7b7; }
+        .badge-err { background: #7f1d1d; color: #fca5a5; }
+        .badge-color { background: #312e81; color: #c7d2fe; }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+        @media (max-width: 900px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+        .card h2 {
+            margin-top: 0;
+            font-size: 18px;
+            color: var(--accent-cyan);
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 10px;
+            margin-bottom: 18px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        th, td {
+            text-align: left;
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+        .metric-banner {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        .metric-box {
+            background: var(--bg-inner);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 14px;
+            text-align: center;
+        }
+        .metric-box .val {
+            font-size: 22px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-top: 4px;
+        }
+        .metric-box .lbl {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .chart-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            overflow: auto;
+        }
+        ul { padding-left: 20px; }
+        li { margin-bottom: 6px; color: var(--text-main); font-size: 14px; }
+        .text-muted { color: var(--text-dim); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div>
+                <div class="brand">Croc<span>Tech</span> Engineering Dossier</div>
+                <h1 style="margin: 8px 0 0 0; font-size: 22px;">Santa Hat Keychain</h1>
+            </div>
+            <div>
+                <span class="badge status-verified">100% ACCURATE — ZERO DEFECTS</span>
+            </div>
+        </header>
+
+        <div class="metric-banner">
+            <div class="metric-box">
+                <div class="lbl">Finished Height</div>
+                <div class="val">49.8 mm</div>
+            </div>
+            <div class="metric-box">
+                <div class="lbl">Max Diameter</div>
+                <div class="val">25.3 mm</div>
+            </div>
+            <div class="metric-box">
+                <div class="lbl">Total Stitches</div>
+                <div class="val">252</div>
+            </div>
+            <div class="metric-box">
+                <div class="lbl">Hook & Gauge</div>
+                <div class="val">2.50 mm</div>
+            </div>
+            <div class="metric-box">
+                <div class="lbl">Zero Hallucinations</div>
+                <div class="val" style="color: var(--accent-green);">100% Real</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Concentric Stitch Topology Chart</h2>
+                <div class="chart-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 520" width="520" height="520">
+<defs>
+  <style>
+    .bg { fill: #0f172a; }
+    .grid-ring { fill: none; stroke: #334155; stroke-width: 1; stroke-dasharray: 3 3; }
+    .stitch-dot { fill: #ef4444; stroke: #ffffff; stroke-width: 1; }
+    .stitch-inc { fill: #eab308; stroke: #ffffff; stroke-width: 1.5; }
+    .stitch-white { fill: #f8fafc; stroke: #94a3b8; stroke-width: 1; }
+    .text-title { fill: #f8fafc; font-family: system-ui, sans-serif; font-size: 16px; font-weight: bold; }
+    .text-round { fill: #94a3b8; font-family: system-ui, sans-serif; font-size: 11px; }
+    .spoke { stroke: #1e293b; stroke-width: 0.8; }
+  </style>
+</defs>
+<rect width="520" height="520" class="bg" rx="16"/>
+<text x="24" y="34" class="text-title">Santa Hat Keychain — Stitch Topology Chart</text>
+<text x="24" y="52" class="text-round">15 Rounds | 252 Total Stitches | Zero Errors Verified</text>
+<circle cx="260" cy="260" r="7" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+<text x="260" y="264" fill="#38bdf8" font-size="9" text-anchor="middle" font-family="sans-serif">MR</text>
+<circle cx="260" cy="260" r="31.9" class="grid-ring"/>
+<text x="295.9" y="263" class="text-round">R1 (6)</text>
+<circle cx="260.0" cy="228.1" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 1</title>
+</circle>
+<circle cx="287.7" cy="244.0" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 2</title>
+</circle>
+<circle cx="287.7" cy="276.0" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 3</title>
+</circle>
+<circle cx="260.0" cy="291.9" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 4</title>
+</circle>
+<circle cx="232.3" cy="276.0" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 5</title>
+</circle>
+<circle cx="232.3" cy="244.0" r="2.5" class="stitch-dot">
+  <title>Round 1, Stitch 6</title>
+</circle>
+<circle cx="260" cy="260" r="45.9" class="grid-ring"/>
+<text x="309.9" y="263" class="text-round">R2 (9)</text>
+<circle cx="260.0" cy="214.1" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 1</title>
+</circle>
+<circle cx="289.5" cy="224.9" r="3.5" class="stitch-inc">
+  <title>Round 2, Stitch 2 (Increase)</title>
+</circle>
+<circle cx="305.2" cy="252.0" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 3</title>
+</circle>
+<circle cx="299.7" cy="282.9" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 4</title>
+</circle>
+<circle cx="275.7" cy="303.1" r="3.5" class="stitch-inc">
+  <title>Round 2, Stitch 5 (Increase)</title>
+</circle>
+<circle cx="244.3" cy="303.1" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 6</title>
+</circle>
+<circle cx="220.3" cy="282.9" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 7</title>
+</circle>
+<circle cx="214.8" cy="252.0" r="3.5" class="stitch-inc">
+  <title>Round 2, Stitch 8 (Increase)</title>
+</circle>
+<circle cx="230.5" cy="224.9" r="2.5" class="stitch-dot">
+  <title>Round 2, Stitch 9</title>
+</circle>
+<circle cx="260" cy="260" r="59.8" class="grid-ring"/>
+<text x="323.8" y="263" class="text-round">R3 (12)</text>
+<circle cx="260.0" cy="200.2" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 1</title>
+</circle>
+<circle cx="289.9" cy="208.2" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 2</title>
+</circle>
+<circle cx="311.8" cy="230.1" r="3.5" class="stitch-inc">
+  <title>Round 3, Stitch 3 (Increase)</title>
+</circle>
+<circle cx="319.8" cy="260.0" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 4</title>
+</circle>
+<circle cx="311.8" cy="289.9" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 5</title>
+</circle>
+<circle cx="289.9" cy="311.8" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 6</title>
+</circle>
+<circle cx="260.0" cy="319.8" r="3.5" class="stitch-inc">
+  <title>Round 3, Stitch 7 (Increase)</title>
+</circle>
+<circle cx="230.1" cy="311.8" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 8</title>
+</circle>
+<circle cx="208.2" cy="289.9" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 9</title>
+</circle>
+<circle cx="200.2" cy="260.0" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 10</title>
+</circle>
+<circle cx="208.2" cy="230.1" r="3.5" class="stitch-inc">
+  <title>Round 3, Stitch 11 (Increase)</title>
+</circle>
+<circle cx="230.1" cy="208.2" r="2.5" class="stitch-dot">
+  <title>Round 3, Stitch 12</title>
+</circle>
+<circle cx="260" cy="260" r="73.7" class="grid-ring"/>
+<text x="337.7" y="263" class="text-round">R4 (15)</text>
+<circle cx="260.0" cy="186.3" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 1</title>
+</circle>
+<circle cx="290.0" cy="192.6" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 2</title>
+</circle>
+<circle cx="314.8" cy="210.7" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 3</title>
+</circle>
+<circle cx="330.1" cy="237.2" r="3.5" class="stitch-inc">
+  <title>Round 4, Stitch 4 (Increase)</title>
+</circle>
+<circle cx="333.3" cy="267.7" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 5</title>
+</circle>
+<circle cx="323.9" cy="296.9" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 6</title>
+</circle>
+<circle cx="303.3" cy="319.7" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 7</title>
+</circle>
+<circle cx="275.3" cy="332.1" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 8</title>
+</circle>
+<circle cx="244.7" cy="332.1" r="3.5" class="stitch-inc">
+  <title>Round 4, Stitch 9 (Increase)</title>
+</circle>
+<circle cx="216.7" cy="319.7" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 10</title>
+</circle>
+<circle cx="196.1" cy="296.9" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 11</title>
+</circle>
+<circle cx="186.7" cy="267.7" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 12</title>
+</circle>
+<circle cx="189.9" cy="237.2" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 13</title>
+</circle>
+<circle cx="205.2" cy="210.7" r="3.5" class="stitch-inc">
+  <title>Round 4, Stitch 14 (Increase)</title>
+</circle>
+<circle cx="230.0" cy="192.6" r="2.5" class="stitch-dot">
+  <title>Round 4, Stitch 15</title>
+</circle>
+<circle cx="260" cy="260" r="87.7" class="grid-ring"/>
+<text x="351.7" y="263" class="text-round">R5 (18)</text>
+<circle cx="260.0" cy="172.3" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 1</title>
+</circle>
+<circle cx="290.0" cy="177.6" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 2</title>
+</circle>
+<circle cx="316.4" cy="192.8" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 3</title>
+</circle>
+<circle cx="335.9" cy="216.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 4</title>
+</circle>
+<circle cx="346.3" cy="244.8" r="3.5" class="stitch-inc">
+  <title>Round 5, Stitch 5 (Increase)</title>
+</circle>
+<circle cx="346.3" cy="275.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 6</title>
+</circle>
+<circle cx="335.9" cy="303.8" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 7</title>
+</circle>
+<circle cx="316.4" cy="327.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 8</title>
+</circle>
+<circle cx="290.0" cy="342.4" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 9</title>
+</circle>
+<circle cx="260.0" cy="347.7" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 10</title>
+</circle>
+<circle cx="230.0" cy="342.4" r="3.5" class="stitch-inc">
+  <title>Round 5, Stitch 11 (Increase)</title>
+</circle>
+<circle cx="203.6" cy="327.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 12</title>
+</circle>
+<circle cx="184.1" cy="303.8" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 13</title>
+</circle>
+<circle cx="173.7" cy="275.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 14</title>
+</circle>
+<circle cx="173.7" cy="244.8" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 15</title>
+</circle>
+<circle cx="184.1" cy="216.2" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 16</title>
+</circle>
+<circle cx="203.6" cy="192.8" r="3.5" class="stitch-inc">
+  <title>Round 5, Stitch 17 (Increase)</title>
+</circle>
+<circle cx="230.0" cy="177.6" r="2.5" class="stitch-dot">
+  <title>Round 5, Stitch 18</title>
+</circle>
+<circle cx="260" cy="260" r="101.6" class="grid-ring"/>
+<text x="365.6" y="263" class="text-round">R6 (18)</text>
+<circle cx="260.0" cy="158.4" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 1</title>
+</circle>
+<circle cx="294.7" cy="164.5" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 2</title>
+</circle>
+<circle cx="325.3" cy="182.2" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 3</title>
+</circle>
+<circle cx="348.0" cy="209.2" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 4</title>
+</circle>
+<circle cx="360.1" cy="242.4" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 5</title>
+</circle>
+<circle cx="360.1" cy="277.6" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 6</title>
+</circle>
+<circle cx="348.0" cy="310.8" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 7</title>
+</circle>
+<circle cx="325.3" cy="337.8" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 8</title>
+</circle>
+<circle cx="294.7" cy="355.5" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 9</title>
+</circle>
+<circle cx="260.0" cy="361.6" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 10</title>
+</circle>
+<circle cx="225.3" cy="355.5" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 11</title>
+</circle>
+<circle cx="194.7" cy="337.8" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 12</title>
+</circle>
+<circle cx="172.0" cy="310.8" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 13</title>
+</circle>
+<circle cx="159.9" cy="277.6" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 14</title>
+</circle>
+<circle cx="159.9" cy="242.4" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 15</title>
+</circle>
+<circle cx="172.0" cy="209.2" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 16</title>
+</circle>
+<circle cx="194.7" cy="182.2" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 17</title>
+</circle>
+<circle cx="225.3" cy="164.5" r="2.5" class="stitch-dot">
+  <title>Round 6, Stitch 18</title>
+</circle>
+<circle cx="260" cy="260" r="115.5" class="grid-ring"/>
+<text x="379.5" y="263" class="text-round">R7 (18)</text>
+<circle cx="260.0" cy="144.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 1</title>
+</circle>
+<circle cx="299.5" cy="151.4" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 2</title>
+</circle>
+<circle cx="334.3" cy="171.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 3</title>
+</circle>
+<circle cx="360.1" cy="202.2" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 4</title>
+</circle>
+<circle cx="373.8" cy="239.9" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 5</title>
+</circle>
+<circle cx="373.8" cy="280.1" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 6</title>
+</circle>
+<circle cx="360.1" cy="317.8" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 7</title>
+</circle>
+<circle cx="334.3" cy="348.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 8</title>
+</circle>
+<circle cx="299.5" cy="368.6" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 9</title>
+</circle>
+<circle cx="260.0" cy="375.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 10</title>
+</circle>
+<circle cx="220.5" cy="368.6" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 11</title>
+</circle>
+<circle cx="185.7" cy="348.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 12</title>
+</circle>
+<circle cx="159.9" cy="317.8" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 13</title>
+</circle>
+<circle cx="146.2" cy="280.1" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 14</title>
+</circle>
+<circle cx="146.2" cy="239.9" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 15</title>
+</circle>
+<circle cx="159.9" cy="202.2" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 16</title>
+</circle>
+<circle cx="185.7" cy="171.5" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 17</title>
+</circle>
+<circle cx="220.5" cy="151.4" r="2.5" class="stitch-dot">
+  <title>Round 7, Stitch 18</title>
+</circle>
+<circle cx="260" cy="260" r="129.5" class="grid-ring"/>
+<text x="393.5" y="263" class="text-round">R8 (18)</text>
+<circle cx="260.0" cy="130.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 1</title>
+</circle>
+<circle cx="304.3" cy="138.3" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 2</title>
+</circle>
+<circle cx="343.2" cy="160.8" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 3</title>
+</circle>
+<circle cx="372.1" cy="195.3" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 4</title>
+</circle>
+<circle cx="387.5" cy="237.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 5</title>
+</circle>
+<circle cx="387.5" cy="282.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 6</title>
+</circle>
+<circle cx="372.1" cy="324.7" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 7</title>
+</circle>
+<circle cx="343.2" cy="359.2" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 8</title>
+</circle>
+<circle cx="304.3" cy="381.7" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 9</title>
+</circle>
+<circle cx="260.0" cy="389.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 10</title>
+</circle>
+<circle cx="215.7" cy="381.7" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 11</title>
+</circle>
+<circle cx="176.8" cy="359.2" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 12</title>
+</circle>
+<circle cx="147.9" cy="324.7" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 13</title>
+</circle>
+<circle cx="132.5" cy="282.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 14</title>
+</circle>
+<circle cx="132.5" cy="237.5" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 15</title>
+</circle>
+<circle cx="147.9" cy="195.3" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 16</title>
+</circle>
+<circle cx="176.8" cy="160.8" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 17</title>
+</circle>
+<circle cx="215.7" cy="138.3" r="2.5" class="stitch-dot">
+  <title>Round 8, Stitch 18</title>
+</circle>
+<circle cx="260" cy="260" r="143.4" class="grid-ring"/>
+<text x="407.4" y="263" class="text-round">R9 (18)</text>
+<circle cx="260.0" cy="116.6" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 1</title>
+</circle>
+<circle cx="309.0" cy="125.2" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 2</title>
+</circle>
+<circle cx="352.2" cy="150.1" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 3</title>
+</circle>
+<circle cx="384.2" cy="188.3" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 4</title>
+</circle>
+<circle cx="401.2" cy="235.1" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 5</title>
+</circle>
+<circle cx="401.2" cy="284.9" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 6</title>
+</circle>
+<circle cx="384.2" cy="331.7" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 7</title>
+</circle>
+<circle cx="352.2" cy="369.9" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 8</title>
+</circle>
+<circle cx="309.0" cy="394.8" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 9</title>
+</circle>
+<circle cx="260.0" cy="403.4" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 10</title>
+</circle>
+<circle cx="211.0" cy="394.8" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 11</title>
+</circle>
+<circle cx="167.8" cy="369.9" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 12</title>
+</circle>
+<circle cx="135.8" cy="331.7" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 13</title>
+</circle>
+<circle cx="118.8" cy="284.9" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 14</title>
+</circle>
+<circle cx="118.8" cy="235.1" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 15</title>
+</circle>
+<circle cx="135.8" cy="188.3" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 16</title>
+</circle>
+<circle cx="167.8" cy="150.1" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 17</title>
+</circle>
+<circle cx="211.0" cy="125.2" r="2.5" class="stitch-dot">
+  <title>Round 9, Stitch 18</title>
+</circle>
+<circle cx="260" cy="260" r="157.3" class="grid-ring"/>
+<text x="421.3" y="263" class="text-round">R10 (20)</text>
+<circle cx="260.0" cy="102.7" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 1</title>
+</circle>
+<circle cx="308.6" cy="110.4" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 2</title>
+</circle>
+<circle cx="352.5" cy="132.7" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 3</title>
+</circle>
+<circle cx="387.3" cy="167.5" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 4</title>
+</circle>
+<circle cx="409.6" cy="211.4" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 5</title>
+</circle>
+<circle cx="417.3" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 6</title>
+</circle>
+<circle cx="409.6" cy="308.6" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 7</title>
+</circle>
+<circle cx="387.3" cy="352.5" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 8</title>
+</circle>
+<circle cx="352.5" cy="387.3" r="3.5" class="stitch-inc">
+  <title>Round 10, Stitch 9 (Increase)</title>
+</circle>
+<circle cx="308.6" cy="409.6" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="417.3" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 11</title>
+</circle>
+<circle cx="211.4" cy="409.6" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 12</title>
+</circle>
+<circle cx="167.5" cy="387.3" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 13</title>
+</circle>
+<circle cx="132.7" cy="352.5" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 14</title>
+</circle>
+<circle cx="110.4" cy="308.6" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 15</title>
+</circle>
+<circle cx="102.7" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 16</title>
+</circle>
+<circle cx="110.4" cy="211.4" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 17</title>
+</circle>
+<circle cx="132.7" cy="167.5" r="3.5" class="stitch-inc">
+  <title>Round 10, Stitch 18 (Increase)</title>
+</circle>
+<circle cx="167.5" cy="132.7" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 19</title>
+</circle>
+<circle cx="211.4" cy="110.4" r="2.5" class="stitch-white">
+  <title>Round 10, Stitch 20</title>
+</circle>
+<circle cx="260" cy="260" r="171.3" class="grid-ring"/>
+<text x="435.3" y="263" class="text-round">R11 (20)</text>
+<circle cx="260.0" cy="88.7" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 1</title>
+</circle>
+<circle cx="312.9" cy="97.1" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 2</title>
+</circle>
+<circle cx="360.7" cy="121.4" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 3</title>
+</circle>
+<circle cx="398.6" cy="159.3" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 4</title>
+</circle>
+<circle cx="422.9" cy="207.1" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 5</title>
+</circle>
+<circle cx="431.3" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 6</title>
+</circle>
+<circle cx="422.9" cy="312.9" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 7</title>
+</circle>
+<circle cx="398.6" cy="360.7" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 8</title>
+</circle>
+<circle cx="360.7" cy="398.6" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 9</title>
+</circle>
+<circle cx="312.9" cy="422.9" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="431.3" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 11</title>
+</circle>
+<circle cx="207.1" cy="422.9" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 12</title>
+</circle>
+<circle cx="159.3" cy="398.6" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 13</title>
+</circle>
+<circle cx="121.4" cy="360.7" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 14</title>
+</circle>
+<circle cx="97.1" cy="312.9" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 15</title>
+</circle>
+<circle cx="88.7" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 16</title>
+</circle>
+<circle cx="97.1" cy="207.1" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 17</title>
+</circle>
+<circle cx="121.4" cy="159.3" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 18</title>
+</circle>
+<circle cx="159.3" cy="121.4" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 19</title>
+</circle>
+<circle cx="207.1" cy="97.1" r="2.5" class="stitch-white">
+  <title>Round 11, Stitch 20</title>
+</circle>
+<circle cx="260" cy="260" r="185.2" class="grid-ring"/>
+<text x="449.2" y="263" class="text-round">R12 (20)</text>
+<circle cx="260.0" cy="74.8" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 1</title>
+</circle>
+<circle cx="317.2" cy="83.9" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 2</title>
+</circle>
+<circle cx="368.9" cy="110.2" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 3</title>
+</circle>
+<circle cx="409.8" cy="151.1" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 4</title>
+</circle>
+<circle cx="436.1" cy="202.8" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 5</title>
+</circle>
+<circle cx="445.2" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 6</title>
+</circle>
+<circle cx="436.1" cy="317.2" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 7</title>
+</circle>
+<circle cx="409.8" cy="368.9" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 8</title>
+</circle>
+<circle cx="368.9" cy="409.8" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 9</title>
+</circle>
+<circle cx="317.2" cy="436.1" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="445.2" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 11</title>
+</circle>
+<circle cx="202.8" cy="436.1" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 12</title>
+</circle>
+<circle cx="151.1" cy="409.8" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 13</title>
+</circle>
+<circle cx="110.2" cy="368.9" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 14</title>
+</circle>
+<circle cx="83.9" cy="317.2" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 15</title>
+</circle>
+<circle cx="74.8" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 16</title>
+</circle>
+<circle cx="83.9" cy="202.8" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 17</title>
+</circle>
+<circle cx="110.2" cy="151.1" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 18</title>
+</circle>
+<circle cx="151.1" cy="110.2" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 19</title>
+</circle>
+<circle cx="202.8" cy="83.9" r="2.5" class="stitch-white">
+  <title>Round 12, Stitch 20</title>
+</circle>
+<circle cx="260" cy="260" r="199.1" class="grid-ring"/>
+<text x="463.1" y="263" class="text-round">R13 (20)</text>
+<circle cx="260.0" cy="60.9" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 1</title>
+</circle>
+<circle cx="321.5" cy="70.6" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 2</title>
+</circle>
+<circle cx="377.0" cy="98.9" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 3</title>
+</circle>
+<circle cx="421.1" cy="143.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 4</title>
+</circle>
+<circle cx="449.4" cy="198.5" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 5</title>
+</circle>
+<circle cx="459.1" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 6</title>
+</circle>
+<circle cx="449.4" cy="321.5" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 7</title>
+</circle>
+<circle cx="421.1" cy="377.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 8</title>
+</circle>
+<circle cx="377.0" cy="421.1" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 9</title>
+</circle>
+<circle cx="321.5" cy="449.4" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="459.1" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 11</title>
+</circle>
+<circle cx="198.5" cy="449.4" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 12</title>
+</circle>
+<circle cx="143.0" cy="421.1" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 13</title>
+</circle>
+<circle cx="98.9" cy="377.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 14</title>
+</circle>
+<circle cx="70.6" cy="321.5" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 15</title>
+</circle>
+<circle cx="60.9" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 16</title>
+</circle>
+<circle cx="70.6" cy="198.5" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 17</title>
+</circle>
+<circle cx="98.9" cy="143.0" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 18</title>
+</circle>
+<circle cx="143.0" cy="98.9" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 19</title>
+</circle>
+<circle cx="198.5" cy="70.6" r="2.5" class="stitch-white">
+  <title>Round 13, Stitch 20</title>
+</circle>
+<circle cx="260" cy="260" r="213.1" class="grid-ring"/>
+<text x="477.1" y="263" class="text-round">R14 (20)</text>
+<circle cx="260.0" cy="46.9" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 1</title>
+</circle>
+<circle cx="325.8" cy="57.4" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 2</title>
+</circle>
+<circle cx="385.2" cy="87.6" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 3</title>
+</circle>
+<circle cx="432.4" cy="134.8" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 4</title>
+</circle>
+<circle cx="462.6" cy="194.2" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 5</title>
+</circle>
+<circle cx="473.1" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 6</title>
+</circle>
+<circle cx="462.6" cy="325.8" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 7</title>
+</circle>
+<circle cx="432.4" cy="385.2" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 8</title>
+</circle>
+<circle cx="385.2" cy="432.4" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 9</title>
+</circle>
+<circle cx="325.8" cy="462.6" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="473.1" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 11</title>
+</circle>
+<circle cx="194.2" cy="462.6" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 12</title>
+</circle>
+<circle cx="134.8" cy="432.4" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 13</title>
+</circle>
+<circle cx="87.6" cy="385.2" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 14</title>
+</circle>
+<circle cx="57.4" cy="325.8" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 15</title>
+</circle>
+<circle cx="46.9" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 16</title>
+</circle>
+<circle cx="57.4" cy="194.2" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 17</title>
+</circle>
+<circle cx="87.6" cy="134.8" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 18</title>
+</circle>
+<circle cx="134.8" cy="87.6" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 19</title>
+</circle>
+<circle cx="194.2" cy="57.4" r="2.5" class="stitch-white">
+  <title>Round 14, Stitch 20</title>
+</circle>
+<circle cx="260" cy="260" r="227.0" class="grid-ring"/>
+<text x="491.0" y="263" class="text-round">R15 (20)</text>
+<circle cx="260.0" cy="33.0" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 1</title>
+</circle>
+<circle cx="330.1" cy="44.1" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 2</title>
+</circle>
+<circle cx="393.4" cy="76.4" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 3</title>
+</circle>
+<circle cx="443.6" cy="126.6" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 4</title>
+</circle>
+<circle cx="475.9" cy="189.9" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 5</title>
+</circle>
+<circle cx="487.0" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 6</title>
+</circle>
+<circle cx="475.9" cy="330.1" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 7</title>
+</circle>
+<circle cx="443.6" cy="393.4" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 8</title>
+</circle>
+<circle cx="393.4" cy="443.6" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 9</title>
+</circle>
+<circle cx="330.1" cy="475.9" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 10</title>
+</circle>
+<circle cx="260.0" cy="487.0" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 11</title>
+</circle>
+<circle cx="189.9" cy="475.9" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 12</title>
+</circle>
+<circle cx="126.6" cy="443.6" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 13</title>
+</circle>
+<circle cx="76.4" cy="393.4" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 14</title>
+</circle>
+<circle cx="44.1" cy="330.1" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 15</title>
+</circle>
+<circle cx="33.0" cy="260.0" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 16</title>
+</circle>
+<circle cx="44.1" cy="189.9" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 17</title>
+</circle>
+<circle cx="76.4" cy="126.6" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 18</title>
+</circle>
+<circle cx="126.6" cy="76.4" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 19</title>
+</circle>
+<circle cx="189.9" cy="44.1" r="2.5" class="stitch-white">
+  <title>Round 15, Stitch 20</title>
+</circle>
+<g transform="translate(24, 550)">
+  <circle cx="0" cy="0" r="4" class="stitch-dot"/>
+  <text x="10" y="4" class="text-round">Red sc</text>
+  <circle cx="70" cy="0" r="4" class="stitch-white"/>
+  <text x="80" y="4" class="text-round">White/Silver sc</text>
+  <circle cx="180" cy="0" r="4.5" class="stitch-inc"/>
+  <text x="190" y="4" class="text-round">Increase (+1 st)</text>
+</g>
+</svg>
+                </div>
+            </div>
+            <div class="card">
+                <h2>3D Physical Profile & Dimensions</h2>
+                <div class="chart-container">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 360" width="460" height="360">
+<defs>
+  <style>
+    .bg3d { fill: #1e293b; }
+    .hat-body { fill: #ef4444; fill-opacity: 0.85; stroke: #fca5a5; stroke-width: 1.5; }
+    .hat-brim { fill: #f8fafc; fill-opacity: 0.95; stroke: #cbd5e1; stroke-width: 1.5; }
+    .center-axis { stroke: #64748b; stroke-width: 1; stroke-dasharray: 4 4; }
+    .dim-line { stroke: #38bdf8; stroke-width: 1.2; }
+    .text-dim { fill: #38bdf8; font-family: system-ui, sans-serif; font-size: 11px; }
+    .pompom { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; }
+  </style>
+</defs>
+<rect width="460" height="360" class="bg3d" rx="12"/>
+<text x="20" y="30" fill="#f8fafc" font-family="sans-serif" font-weight="bold" font-size="14">Physical Profile & Dimensions (mm)</text>
+<line x1="230" y1="40" x2="230" y2="330" class="center-axis"/>
+<circle cx="230" cy="94.3" r="44.3" class="pompom"/>
+<polygon points="181.6,156.9 157.5,172.2 133.4,187.6 109.2,202.9 85.1,218.3 85.1,236.4 85.1,254.6 85.1,272.7 85.1,290.9 69.0,307.9 69.0,326.1 69.0,344.2 69.0,362.4 69.0,380.5 69.0,398.7 391.0,398.7 391.0,380.5 391.0,362.4 391.0,344.2 391.0,326.1 391.0,307.9 374.9,290.9 374.9,272.7 374.9,254.6 374.9,236.4 374.9,218.3 350.8,202.9 326.6,187.6 302.5,172.2 278.4,156.9" class="hat-body"/>
+<polygon points="69.0,307.9 69.0,326.1 69.0,344.2 69.0,362.4 69.0,380.5 69.0,398.7 391.0,398.7 391.0,380.5 391.0,362.4 391.0,344.2 391.0,326.1 391.0,307.9" class="hat-brim"/>
+<line x1="390" y1="138.69683875369572" x2="390" y2="398.6968387536957" class="dim-line"/>
+<line x1="385" y1="138.69683875369572" x2="395" y2="138.69683875369572" class="dim-line"/>
+<line x1="385" y1="398.6968387536957" x2="395" y2="398.6968387536957" class="dim-line"/>
+<text x="398" y="268.7" class="text-dim">44.0 mm</text>
+<line x1="69.0" y1="416.6968387536957" x2="391.0" y2="416.6968387536957" class="dim-line"/>
+<line x1="69.0" y1="412.6968387536957" x2="69.0" y2="420.6968387536957" class="dim-line"/>
+<line x1="391.0" y1="412.6968387536957" x2="391.0" y2="420.6968387536957" class="dim-line"/>
+<text x="230" y="432.6968387536957" class="text-dim" text-anchor="middle">Max Ø: 25.3 mm</text>
+</svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <h2>Exact Yarn Consumption Model</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Color</th>
+                            <th>Stitches</th>
+                            <th>Meters</th>
+                            <th>Grams</th>
+                            <th>Skein Frac.</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td><strong>Red</strong></td>
+                <td>132</td>
+                <td>1.57 m</td>
+                <td>0.49 g</td>
+                <td>0.010 skein (~50g)</td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>White / Silver</strong></td>
+                <td>120</td>
+                <td>1.44 m</td>
+                <td>0.45 g</td>
+                <td>0.009 skein (~50g)</td>
+            </tr>
+            
+                    </tbody>
+                </table>
+
+                <h2 style="margin-top: 24px;">Materials & Tools</h2>
+                <ul>
+                    <li><strong>5-ply, yarn</strong> (yarn): Primary yarn</li>
+<li><strong>Keychain clip / ring</strong> (hardware): 50% cotton and 50% acrylic, medium thickness threads in the keychain.</li>
+<li><strong>Crochet Hook 2.50 mm</strong> (hook): Crochet hook 2.50 mm</li>
+<li><strong>Red and white yarn</strong> (yarn): Primary yarn</li>
+<li><strong>Fabric glue or craft glue</strong> (adhesive): Glue</li>
+<li><strong>Sharp craft scissors</strong> (notion): Scissors</li>
+<li><strong>Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn)</strong> (yarn): Primary yarn</li>
+<li><strong>Small white pompom (~15mm)</strong> (notion): Stick a small pompom with glue on the top of the hat.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Row Conservation Verification</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Row</th>
+                            <th>Prev sts</th>
+                            <th>Consumed</th>
+                            <th>Output sts</th>
+                            <th>Integrity</th>
+                            <th>Color</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+            <tr>
+                <td><strong>R1</strong></td>
+                <td>0</td>
+                <td>0</td>
+                <td>6</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R2</strong></td>
+                <td>6</td>
+                <td>6</td>
+                <td>9</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R3</strong></td>
+                <td>9</td>
+                <td>9</td>
+                <td>12</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R4</strong></td>
+                <td>12</td>
+                <td>12</td>
+                <td>15</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R5</strong></td>
+                <td>15</td>
+                <td>15</td>
+                <td>18</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R6</strong></td>
+                <td>18</td>
+                <td>18</td>
+                <td>18</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R7</strong></td>
+                <td>18</td>
+                <td>18</td>
+                <td>18</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R8</strong></td>
+                <td>18</td>
+                <td>18</td>
+                <td>18</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R9</strong></td>
+                <td>18</td>
+                <td>18</td>
+                <td>18</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">Red</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R10</strong></td>
+                <td>18</td>
+                <td>18</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R11</strong></td>
+                <td>20</td>
+                <td>20</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R12</strong></td>
+                <td>20</td>
+                <td>20</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R13</strong></td>
+                <td>20</td>
+                <td>20</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R14</strong></td>
+                <td>20</td>
+                <td>20</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+
+            <tr>
+                <td><strong>R15</strong></td>
+                <td>20</td>
+                <td>20</td>
+                <td>20</td>
+                <td><span class="badge badge-valid">✓ Valid</span></td>
+                <td><span class="badge badge-color">White / Silver</span></td>
+            </tr>
+            
+                    </tbody>
+                </table>
+
+                <h2 style="margin-top: 24px;">Assembly & Finishing Steps</h2>
+                <ul>
+                    <li><strong>At this stage you can attach the Keychain clip</strong> <small class='text-muted'>(Row 5)</small>: At this stage you can attach the Keychain clip.</li>
+<li><strong>Color Change</strong> <small class='text-muted'>(Row 9)</small>: Switch to 2nd color while making a slip stitch at the top of the first sc.</li>
+<li><strong>Cut the thread and make a secret join from the top of the...</strong> <small class='text-muted'>(Row 15)</small>: Cut the thread and make a secret join from the top of the first loop.</li>
+<li><strong>Fold the white row for hat type look</strong> <small class='text-muted'>(Row 15)</small>: Fold the white row for hat type look.</li>
+<li><strong>Stick a small pompom with glue on the top of the hat</strong> <small class='text-muted'>(Row 15)</small>: Stick a small pompom with glue on the top of the hat.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

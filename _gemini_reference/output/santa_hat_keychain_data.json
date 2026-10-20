@@ -1,0 +1,136 @@
+{
+  "schema_version": "croctech-v1.0",
+  "title": "Santa Hat Keychain",
+  "description": "High precision crochet pattern verified by CrocTech Framework",
+  "terminology": "US",
+  "working_mode": "joined_rounds",
+  "hook_mm": 2.5,
+  "yarn": {
+    "weight": "5-ply (Fine 2 / Sport)",
+    "composition": "50% cotton and 50% acrylic, medium thickness threads in the keychain.",
+    "colors": [
+      "Red",
+      "White",
+      "Silver (Glitter)"
+    ]
+  },
+  "verification": {
+    "is_valid": true,
+    "error_count": 0,
+    "warning_count": 0,
+    "total_stitches": 252,
+    "total_rows": 15,
+    "graph_nodes": 267
+  },
+  "dimensions": {
+    "finished_height_mm": 49.76,
+    "max_diameter_mm": 25.26,
+    "has_folded_brim": true,
+    "folded_rows": 3,
+    "pompom_height_mm": 15.0
+  },
+  "yarn_usage": {
+    "Red": {
+      "stitches": 132,
+      "meters": 1.57,
+      "grams": 0.49
+    },
+    "White / Silver": {
+      "stitches": 120,
+      "meters": 1.44,
+      "grams": 0.45
+    }
+  },
+  "rounds": [
+    {
+      "round_number": 1,
+      "calculated_count": 6,
+      "color": "Red",
+      "raw_text": "Row 1: 1 chain. Make 6 single crochets into the ring. Complete the row by making a slip stitch at the top of the single crochet."
+    },
+    {
+      "round_number": 2,
+      "calculated_count": 9,
+      "color": "Red",
+      "raw_text": "Row 2: 1 chain. Make 1 single crochet on the top of the same loop. 2 single crochets in the top of the next stitch. 1 single crochet into the top of the next stitch. Make 1 single crochet, 2 single crochet, 1 single crochet, 2 single crochet until you reach the end of the row, making a total of 9 single crochets. (x, v sc) Complete the row by making a slip stitch at the top of the first single crochet."
+    },
+    {
+      "round_number": 3,
+      "calculated_count": 12,
+      "color": "Red",
+      "raw_text": "Row 3: 1 chain. Starting from the top of the loop where you made the slip stitch, make 2 single crochets side by side. 2 single crochets in the top of the next stitch. 2 single crochets side by side. 2 single crochets in the top of the next stitch. Make 2 single crochets, 2 single crochets, 2 single crochets, 2 single crochets, 2 single crochets until the end of the row, making a total of 12 single crochets. (2x, v sc) Complete the row by making a slip stitch at the top of the first single crochet."
+    },
+    {
+      "round_number": 4,
+      "calculated_count": 15,
+      "color": "Red",
+      "raw_text": "Row 4: 1 chain. Starting from the top of the loop where you made the slip stitch, make 3 single crochets side by side. 2 single crochets in the top of the next stitch. 3 sc side by side. 2 sc in the top of the next stitch. Make 3 sc, 2 sc, 3 sc, 2 sc until the end of the row, making a total of 15 sc. (3x, v sc) Complete the row by making a slip stitch at the top of the first sc."
+    },
+    {
+      "round_number": 5,
+      "calculated_count": 18,
+      "color": "Red",
+      "raw_text": "Row 5: 1 ch. Starting from the top of the loop where made the slip stitch, make 4 sc side by side. 2 sc in the top of the next stitch. 4 sc side by side. 2 sc in the top of the next stitch. Make 4 sc, 2 sc, 4 sc, 2 sc until the end of the row, making a total of 18 sc. (4x, v sc) Complete the row by making a slip stitch at the top of the first sc."
+    },
+    {
+      "round_number": 6,
+      "calculated_count": 18,
+      "color": "Red",
+      "raw_text": "Row 6: 1 ch. Starting from the top of the loop where you made the slip stitch, make 18 sc side by side. Complete the row by making a slip stitch at the top of the first sc."
+    },
+    {
+      "round_number": 7,
+      "calculated_count": 18,
+      "color": "Red",
+      "raw_text": "Row 7: Repeat the process in the 6th row. (1 ch. Starting from the top of the loop where you made the slip stitch, make 18 sc side by side.) Continue by making 18 sc until there are 9 rows in total from the start (18 sc between rows 6 to 9) After the magic ring made a total of 9 rows."
+    },
+    {
+      "round_number": 8,
+      "calculated_count": 18,
+      "color": "Red",
+      "raw_text": "Row 7: Repeat the process in the 6th row. (1 ch. Starting from the top of the loop where you made the slip stitch, make 18 sc side by side.) Continue by making 18 sc until there are 9 rows in total from the start (18 sc between rows 6 to 9) After the magic ring made a total of 9 rows."
+    },
+    {
+      "round_number": 9,
+      "calculated_count": 18,
+      "color": "Red",
+      "raw_text": "Row 7: Repeat the process in the 6th row. (1 ch. Starting from the top of the loop where you made the slip stitch, make 18 sc side by side.) Continue by making 18 sc until there are 9 rows in total from the start (18 sc between rows 6 to 9) After the magic ring made a total of 9 rows."
+    },
+    {
+      "round_number": 10,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 10: 1 ch. Starting from the top of the loop where you made the slip stitch, make 8 sc side by side. 2 sc in the top of the next stitch. Make 8 sc, 2 sc, 8 sc, 2 sc until the end of the row, making a total of 20 sc. (8x, v sc) Complete the row by making a slip stitch at the top of the first sc."
+    },
+    {
+      "round_number": 11,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 11: 1 chain. Starting from the top of the loop where you made the slip stitch, make 20 sc stitches side by side. Continue making 20 sc until there are 15 rows in total (20 sc between rows 10 to 15). Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn) Made a total of 15 rows after the magic ring."
+    },
+    {
+      "round_number": 12,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 11: 1 chain. Starting from the top of the loop where you made the slip stitch, make 20 sc stitches side by side. Continue making 20 sc until there are 15 rows in total (20 sc between rows 10 to 15). Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn) Made a total of 15 rows after the magic ring."
+    },
+    {
+      "round_number": 13,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 11: 1 chain. Starting from the top of the loop where you made the slip stitch, make 20 sc stitches side by side. Continue making 20 sc until there are 15 rows in total (20 sc between rows 10 to 15). Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn) Made a total of 15 rows after the magic ring."
+    },
+    {
+      "round_number": 14,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 11: 1 chain. Starting from the top of the loop where you made the slip stitch, make 20 sc stitches side by side. Continue making 20 sc until there are 15 rows in total (20 sc between rows 10 to 15). Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn) Made a total of 15 rows after the magic ring."
+    },
+    {
+      "round_number": 15,
+      "calculated_count": 20,
+      "color": "White / Silver",
+      "raw_text": "Row 11: 1 chain. Starting from the top of the loop where you made the slip stitch, make 20 sc stitches side by side. Continue making 20 sc until there are 15 rows in total (20 sc between rows 10 to 15). Made 6 rows with glittery silver yarn for glitter touch. (Otherwise use white yarn) Made a total of 15 rows after the magic ring."
+    }
+  ]
+}

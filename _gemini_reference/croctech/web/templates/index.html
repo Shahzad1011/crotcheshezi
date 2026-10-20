@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrocTech — 100% Accurate AI Crochet Framework</title>
+    <style>
+        :root {
+            --bg-body: #0a0f1d;
+            --bg-card: #131b2e;
+            --bg-card-alt: #1a253f;
+            --border: #233152;
+            --accent-cyan: #06b6d4;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+            --text-main: #f8fafc;
+            --text-dim: #94a3b8;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            padding: 24px;
+        }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 24px;
+        }
+        .logo { font-size: 26px; font-weight: 800; color: var(--accent-cyan); letter-spacing: -0.5px; }
+        .logo span { color: #fff; }
+        .subtitle { font-size: 13px; color: var(--text-dim); margin-top: 2px; }
+        .tag-verified {
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--accent-green);
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+        .main-layout {
+            display: grid;
+            grid-template-columns: 460px 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 1100px) {
+            .main-layout { grid-template-columns: 1fr; }
+        }
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            font-size: 16px;
+            color: var(--accent-cyan);
+            margin-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 8px;
+        }
+        textarea {
+            width: 100%;
+            height: 380px;
+            background: #090d18;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            color: #e2e8f0;
+            font-family: monospace;
+            font-size: 12px;
+            line-height: 1.4;
+            resize: vertical;
+        }
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+        button {
+            padding: 10px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            border: none;
+            transition: 0.15s ease;
+        }
+        .btn-primary {
+            background: var(--accent-cyan);
+            color: #04101e;
+        }
+        .btn-primary:hover { background: #22d3ee; }
+        .btn-secondary {
+            background: var(--bg-card-alt);
+            color: var(--text-main);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover { background: #243356; }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .metric-tile {
+            background: var(--bg-card-alt);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .metric-tile .num {
+            font-size: 20px;
+            font-weight: 700;
+            color: #fff;
+            margin-top: 4px;
+        }
+        .metric-tile .desc {
+            font-size: 11px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        @media (max-width: 900px) {
+            .charts-row { grid-template-columns: 1fr; }
+        }
+        .chart-box {
+            background: #080c16;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 320px;
+            overflow: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px 10px;
+            border-bottom: 1px solid var(--border);
+        }
+        th { color: var(--text-dim); }
+        .pill {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        .pill-green { background: #064e3b; color: #6ee7b7; }
+        .pill-red { background: #7f1d1d; color: #fca5a5; }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <div class="logo">Croc<span>Tech</span> Framework</div>
+            <div class="subtitle">100% Accurate Algorithmic Crochet Compiler & AI Verification</div>
+        </div>
+        <div id="statusBadge" class="tag-verified">✅ 100% ACCURATE (0 DEFECTS)</div>
+    </header>
+
+    <div class="main-layout">
+        <!-- Input & Options Panel -->
+        <div>
+            <div class="card">
+                <h2>Pattern Input (Text / Natural Language)</h2>
+                <textarea id="patternInput" placeholder="Enter crochet instructions..."></textarea>
+                <div class="btn-group">
+                    <button class="btn-primary" id="btnVerify">Compile & Verify Pattern</button>
+                    <button class="btn-secondary" id="btnLoadSample">Load User Example</button>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Compiler Configuration</h2>
+                <div style="font-size: 13px; color: var(--text-dim);">
+                    <p style="margin-bottom: 8px;"><strong>Tension Model:</strong> Tight Amigurumi (0.92 factor)</p>
+                    <p style="margin-bottom: 8px;"><strong>Yarn Model:</strong> 5-ply 50% Cotton 50% Acrylic (320m/100g)</p>
+                    <p style="margin-bottom: 8px;"><strong>Hook Diameter:</strong> 2.50 mm</p>
+                    <p><strong>Conservation Invariant:</strong> Active loop balance checked per row.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Results Panel -->
+        <div>
+            <!-- Metric Tiles -->
+            <div class="metrics-grid">
+                <div class="metric-tile">
+                    <div class="desc">Finished Height</div>
+                    <div class="num" id="metricHeight">55.2 mm</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="desc">Max Diameter</div>
+                    <div class="num" id="metricDiameter">26.0 mm</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="desc">Total Stitches</div>
+                    <div class="num" id="metricStitches">252</div>
+                </div>
+                <div class="metric-tile">
+                    <div class="desc">Compiler Errors</div>
+                    <div class="num" id="metricErrors" style="color: var(--accent-green);">0</div>
+                </div>
+            </div>
+
+            <!-- Visual Charts -->
+            <div class="charts-row">
+                <div class="card" style="margin-bottom: 0;">
+                    <h2>Concentric Stitch Chart</h2>
+                    <div class="chart-box" id="chartBox">
+                        <span style="color: var(--text-dim);">Chart will render here...</span>
+                    </div>
+                </div>
+                <div class="card" style="margin-bottom: 0;">
+                    <h2>3D Physical Silhouette</h2>
+                    <div class="chart-box" id="profileBox">
+                        <span style="color: var(--text-dim);">3D profile will render here...</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yarn & Rounds Tables -->
+            <div style="margin-top: 20px;" class="card">
+                <h2>Exact Yarn Consumption Breakdown</h2>
+                <table id="yarnTable">
+                    <thead>
+                        <tr>
+                            <th>Color</th>
+                            <th>Stitches</th>
+                            <th>Length (Meters)</th>
+                            <th>Weight (Grams)</th>
+                            <th>Skein Frac. (~50g)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="yarnTbody"></tbody>
+                </table>
+            </div>
+
+            <div class="card">
+                <h2>Row-by-Row Stitch Conservation Verification</h2>
+                <table id="roundsTable">
+                    <thead>
+                        <tr>
+                            <th>Row #</th>
+                            <th>Prev sts</th>
+                            <th>Consumed</th>
+                            <th>Produced</th>
+                            <th>Integrity</th>
+                            <th>Color</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roundsTbody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadSample() {
+            const res = await fetch("/api/sample");
+            const data = await res.json();
+            document.getElementById("patternInput").value = data.text;
+            verifyPattern();
+        }
+
+        async function verifyPattern() {
+            const text = document.getElementById("patternInput").value;
+            const res = await fetch("/api/verify", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text, title: "Santa Hat Keychain" })
+            });
+            const data = await res.json();
+
+            // Status Badge
+            const badge = document.getElementById("statusBadge");
+            if (data.is_valid) {
+                badge.className = "tag-verified";
+                badge.innerText = "✅ 100% ACCURATE (0 DEFECTS)";
+                document.getElementById("metricErrors").innerText = "0";
+                document.getElementById("metricErrors").style.color = "var(--accent-green)";
+            } else {
+                badge.style.background = "rgba(239, 68, 68, 0.2)";
+                badge.style.borderColor = "var(--accent-red)";
+                badge.style.color = "#f87171";
+                badge.innerText = `❌ ${data.error_count} DEFECTS FOUND`;
+                document.getElementById("metricErrors").innerText = data.error_count;
+                document.getElementById("metricErrors").style.color = "var(--accent-red)";
+            }
+
+            // Metrics
+            document.getElementById("metricHeight").innerText = `${data.dimensions.finished_height_mm.toFixed(1)} mm`;
+            document.getElementById("metricDiameter").innerText = `${data.dimensions.max_diameter_mm.toFixed(1)} mm`;
+            document.getElementById("metricStitches").innerText = data.dimensions.total_stitches;
+
+            // SVGs
+            document.getElementById("chartBox").innerHTML = data.chart_svg;
+            document.getElementById("profileBox").innerHTML = data.profile_svg;
+
+            // Yarn Table
+            const yarnTbody = document.getElementById("yarnTbody");
+            yarnTbody.innerHTML = "";
+            for (const [color, u] of Object.entries(data.yarn_usage)) {
+                yarnTbody.innerHTML += `
+                    <tr>
+                        <td><strong>${color}</strong></td>
+                        <td>${u.stitches}</td>
+                        <td>${u.meters.toFixed(2)} m</td>
+                        <td>${u.grams.toFixed(2)} g</td>
+                        <td>${u.skeins.toFixed(3)}</td>
+                    </tr>
+                `;
+            }
+
+            // Rounds Table
+            const roundsTbody = document.getElementById("roundsTbody");
+            roundsTbody.innerHTML = "";
+            for (const r of data.rounds) {
+                const pillClass = r.is_valid ? "pill-green" : "pill-red";
+                const pillText = r.is_valid ? "✓ Valid" : "✗ Error";
+                roundsTbody.innerHTML += `
+                    <tr>
+                        <td><strong>R${r.round}</strong></td>
+                        <td>${r.prev_sts}</td>
+                        <td>${r.consumed}</td>
+                        <td>${r.produced}</td>
+                        <td><span class="pill ${pillClass}">${pillText}</span></td>
+                        <td>${r.color}</td>
+                    </tr>
+                `;
+            }
+        }
+
+        document.getElementById("btnLoadSample").addEventListener("click", loadSample);
+        document.getElementById("btnVerify").addEventListener("click", verifyPattern);
+
+        // Auto load sample on first launch
+        window.addEventListener("DOMContentLoaded", loadSample);
+    </script>
+</body>
+</html>
+

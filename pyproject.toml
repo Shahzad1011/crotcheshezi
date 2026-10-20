@@ -1,0 +1,30 @@
+[project]
+name = "croctech"
+version = "0.1.0"
+description = "Deterministic, verification-first crochet pattern framework: AI designs, code computes and cross-checks every stitch."
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2",
+    "pint>=0.24",
+    "reportlab>=4",
+    "matplotlib>=3.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+norecursedirs = ["_gemini_reference", ".venv", "build", "dist"]
+
+[tool.ruff]
+line-length = 100
+# Gemini's relocated reference tree is kept for comparison only; it is not ours to lint.
+extend-exclude = ["_gemini_reference"]

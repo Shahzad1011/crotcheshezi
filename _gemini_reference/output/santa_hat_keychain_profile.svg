@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 400" width="500" height="400">
+<defs>
+  <style>
+    .bg3d { fill: #1e293b; }
+    .hat-body { fill: #ef4444; fill-opacity: 0.85; stroke: #fca5a5; stroke-width: 1.5; }
+    .hat-brim { fill: #f8fafc; fill-opacity: 0.95; stroke: #cbd5e1; stroke-width: 1.5; }
+    .center-axis { stroke: #64748b; stroke-width: 1; stroke-dasharray: 4 4; }
+    .dim-line { stroke: #38bdf8; stroke-width: 1.2; }
+    .text-dim { fill: #38bdf8; font-family: system-ui, sans-serif; font-size: 11px; }
+    .pompom { fill: #ffffff; stroke: #e2e8f0; stroke-width: 1.5; }
+  </style>
+</defs>
+<rect width="500" height="400" class="bg3d" rx="12"/>
+<text x="20" y="30" fill="#f8fafc" font-family="sans-serif" font-weight="bold" font-size="14">Physical Profile & Dimensions (mm)</text>
+<line x1="250" y1="40" x2="250" y2="370" class="center-axis"/>
+<circle cx="250" cy="101.2" r="51.2" class="pompom"/>
+<polygon points="197.4,173.3 171.2,191.0 145.0,208.8 118.8,226.4 92.5,244.2 92.5,265.1 92.5,286.1 92.5,307.0 92.5,328.0 75.0,347.5 75.0,368.6 75.0,389.5 75.0,410.5 75.0,431.4 75.0,452.3 425.0,452.3 425.0,431.4 425.0,410.5 425.0,389.5 425.0,368.6 425.0,347.5 407.5,328.0 407.5,307.0 407.5,286.1 407.5,265.1 407.5,244.2 381.2,226.4 355.0,208.8 328.8,191.0 302.6,173.3" class="hat-body"/>
+<polygon points="75.0,347.5 75.0,368.6 75.0,389.5 75.0,410.5 75.0,431.4 75.0,452.3 425.0,452.3 425.0,431.4 425.0,410.5 425.0,389.5 425.0,368.6 425.0,347.5" class="hat-brim"/>
+<line x1="430" y1="152.34250625426426" x2="430" y2="452.34250625426426" class="dim-line"/>
+<line x1="425" y1="152.34250625426426" x2="435" y2="152.34250625426426" class="dim-line"/>
+<line x1="425" y1="452.34250625426426" x2="435" y2="452.34250625426426" class="dim-line"/>
+<text x="438" y="302.3" class="text-dim">44.0 mm</text>
+<line x1="75.0" y1="470.34250625426426" x2="425.0" y2="470.34250625426426" class="dim-line"/>
+<line x1="75.0" y1="466.34250625426426" x2="75.0" y2="474.34250625426426" class="dim-line"/>
+<line x1="425.0" y1="466.34250625426426" x2="425.0" y2="474.34250625426426" class="dim-line"/>
+<text x="250" y="486.34250625426426" class="text-dim" text-anchor="middle">Max Ø: 25.3 mm</text>
+</svg>
