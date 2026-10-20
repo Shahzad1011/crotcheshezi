@@ -73,8 +73,8 @@ def render_chart(rounds: list[RoundSpec], audits: list[RoundAudit], title: str, 
                edgecolor="white", linewidth=1.2)
         ax.set_xticks(theta)
         ax.set_xticklabels([_row_label(a) for a in audits], fontsize=8)
-    ax.set_title(f"{title}\nRow-by-row stitch count (radius = stitches)", pad=22,
-                 fontsize=12, weight="bold")
+    ax.set_title(f"{title}\nRow-count rose (radius = stitches left, not a stitch chart)",
+                 pad=22, fontsize=11, weight="bold")
     ax.set_rlabel_position(0)
     ax.grid(color="#cccccc", linestyle=":", linewidth=0.6)
     fig.tight_layout()
@@ -111,22 +111,40 @@ def render_bar_chart(rounds: list[RoundSpec], audits: list[RoundAudit], title: s
     return path
 
 
+def row_bands(n: int, row_h: float, build_direction: str | None) -> list[tuple[float, float]]:
+    """(bottom, top) in cm for each row, laid out the way the finished object sits.
+
+    Row order is the order worked, which is not the same fact as up/down: a hat
+    worked from the tip down has its tip at the top. Drawing the stack in work
+    order renders such a piece upside down.
+    """
+    total = n * row_h
+    if build_direction == "from_tip":
+        return [(total - (i + 1) * row_h, total - i * row_h) for i in range(n)]
+    return [(i * row_h, (i + 1) * row_h) for i in range(n)]
+
+
 def render_profile(rounds: list[RoundSpec], audits: list[RoundAudit],
-                   gauge: Gauge, title: str, path: str) -> str:
+                   gauge: Gauge, title: str, path: str,
+                   build_direction: str | None = None) -> str:
     stitch_w = 10.0 / gauge.stitches_per_10cm
     row_h = 10.0 / gauge.rows_per_10cm
     fig, ax = plt.subplots(figsize=(6, 6))
-    for i, a in enumerate(audits):
+    bands = row_bands(len(audits), row_h, build_direction)
+    for (y0, y1), a, r in zip(bands, audits, rounds):
         radius = (a.produced * stitch_w) / (2 * math.pi)
-        y0, y1 = i * row_h, (i + 1) * row_h
         ax.fill_betweenx([y0, y1], -radius, radius,
-                         color=_wedge_color(rounds[i].color), alpha=0.8, linewidth=0)
+                         color=_wedge_color(r.color), alpha=0.8, linewidth=0)
         ax.hlines(y1, -radius, radius, color="white", linewidth=0.6)
     ax.set_aspect("equal")
     ax.axvline(0, color="#9ca3af", linewidth=0.6, linestyle="--")
     ax.set_xlabel("width (cm)")
     ax.set_ylabel("height (cm)")
-    ax.set_title(f"{title}\nAxisymmetric profile (from verified counts)", fontsize=11, weight="bold")
+    dir_note = {"from_tip": "worked from the tip down",
+                "from_base": "worked from the base up"}.get(build_direction or "",
+                                                             "work direction not stated")
+    ax.set_title(f"{title}\nCount-derived cross-section ({dir_note}); "
+                 "width from circumference, not a 3D render", fontsize=10, weight="bold")
     ax.grid(color="#e5e7eb", linestyle=":", linewidth=0.6)
     fig.tight_layout()
     fig.savefig(path, dpi=200, bbox_inches="tight")
@@ -223,9 +241,10 @@ def render_flat(rounds: list[RoundSpec], audits: list[RoundAudit],
 
 def render_silhouette(rounds: list[RoundSpec], audits: list[RoundAudit],
                       gauge: Gauge, title: str, path: str,
-                      blocks: list[BlockAudit] | None = None) -> str:
+                      blocks: list[BlockAudit] | None = None,
+                      build_direction: str | None = None) -> str:
     """Pick the honest geometry: flat pieces are drawn top-down, tubes in profile."""
     rounds, audits = _unit_rows(rounds, audits)
     if rounds and any(r.flat for r in rounds):
         return render_flat(rounds, audits, gauge, title, path, blocks)
-    return render_profile(rounds, audits, gauge, title, path)
+    return render_profile(rounds, audits, gauge, title, path, build_direction)

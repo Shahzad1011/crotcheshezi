@@ -28,7 +28,7 @@ from reportlab.platypus import (
 
 from .engine import Coverage, RoundAudit, audit_blocks, print_rows
 from .gauge import Dimensions, YarnUsage
-from .render_text import _open_questions, shorthand
+from .render_text import _open_questions, shorthand, tag
 from .schema import Pattern
 
 _ACCENT = colors.HexColor("#d11a2a")
@@ -68,17 +68,20 @@ def _styles():
     }
 
 
-def _round_html(rnd, a: RoundAudit) -> str:
-    """Author's wording is the instruction; the engine's count sits beside it as proof."""
+def _round_html(rnd, a: RoundAudit, audit_lines: bool = False) -> str:
+    """Maker pages show the row's own wording and its count. The engine's derivation
+    is an audit artefact and only appears when the audit view is asked for."""
     head = f"<b>Row {rnd.index}</b>" + (f" &mdash; {rnd.label}" if rnd.label else "") + ": "
     colr = f" <font color='#6b7280'>// {rnd.color}</font>" if rnd.color else ""
     verdict = (f"<font color='{_OK_HEX if a.ok else _BAD_HEX}'>"
-               f"{'OK' if a.ok else 'ERROR'}</font>")
-    if rnd.spec_text:
-        return (f"{head}{rnd.spec_text} <b>[{a.produced} sts]</b>{colr} {verdict}<br/>"
-                f"<font size='8' color='#6b7280'>engine check: {shorthand(rnd)} "
+               f"{'OK' if a.ok else 'ERROR'}</font>") if audit_lines else ""
+    work = shorthand(rnd)
+    text = rnd.spec_text or work
+    if rnd.spec_text and audit_lines:
+        return (f"{head}{text} <b>[{a.produced} sts]</b>{colr} {verdict}{tag(rnd.origin)}<br/>"
+                f"<font size='8' color='#6b7280'>engine check: {work} "
                 f"&rarr; {a.produced} sts (declared {a.declared_total})</font>")
-    return f"{head}{shorthand(rnd)} <b>[{a.produced} sts]</b>{colr} {verdict}"
+    return f"{head}{text} <b>[{a.produced} sts]</b>{colr} {verdict}{tag(rnd.origin)}"
 
 
 def _audit_table(audits: list[RoundAudit]) -> Table:
@@ -119,12 +122,14 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
     g = pattern.gauge
     parts = [c for c in pattern.components if c.role == "part"]
     ops = [c for c in pattern.components if c.role == "operation"]
+    hooks_txt = (", ".join(f"{h} mm" for h in pattern.listed_hooks)
+                 or "not stated in the source")
     story: list = []
 
     story.append(Paragraph(pattern.name, st["title"]))
     story.append(Paragraph(
         f"{pattern.item_type.title()} &middot; {len(parts)} part(s) + {len(ops)} finishing "
-        f"operation(s) &middot; hooks {', '.join(f'{h} mm' for h in pattern.listed_hooks)}",
+        f"operation(s) &middot; hooks {hooks_txt}",
         st["sub"]))
     if cover_image_path:
         story.append(Spacer(1, 6))
@@ -138,14 +143,23 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
     story.append(Paragraph(pattern.description, st["body"]))
 
     if pattern.provenance:
+        counts = pattern.origin_counts()
         story.append(Paragraph("Provenance", st["h"]))
         story.append(Paragraph(pattern.provenance, st["body"]))
+        story.append(Paragraph(
+            f"Tally of instruction lines: <b>{counts['source']}</b> quoted from your source, "
+            f"<b>{counts['inferred']}</b> inferred, <b>{counts['added']}</b> added by the "
+            "framework. Lines that are not yours carry an [INFERRED] or [ADDED] tag where they "
+            "appear.", st["small"]))
 
     story.append(Paragraph("Materials", st["h"]))
-    hooks = ", ".join(f"{h} mm" for h in pattern.listed_hooks)
-    assigned = "; ".join(f"{c.name}: {c.hook} mm" for c in pattern.components if c.hook)
-    story.append(Paragraph(f"Yarn: {m.yarn}<br/>Hooks: {hooks}<br/>"
-                           f"Colours: {', '.join(m.colors)}<br/>Notions: {', '.join(m.notions)}",
+    colours = ", ".join(m.colors) or "not stated in the source (choose yours)"
+    notions = ", ".join(m.notions) or "not stated in the source"
+    assigned = "; ".join(f"{c.name}: {c.hook} mm"
+                         + ("" if c.hook_origin == "source" else " (inferred)")
+                         for c in pattern.components if c.hook)
+    story.append(Paragraph(f"Yarn: {m.yarn or 'not stated in the source'}<br/>"
+                           f"Hooks: {hooks_txt}<br/>Colours: {colours}<br/>Notions: {notions}",
                            st["body"]))
     if assigned:
         story.append(Paragraph(f"Hook assignment: {assigned}", st["small"]))
@@ -170,12 +184,13 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
     else:
         lo, hi = dims.band(dims.widest_diameter_cm)
         hlo, hhi = dims.band(dims.height_cm)
-        tag = ("measured from your swatch" if g.calibrated
-               else "<b>ASSUMED</b>, not measured from a swatch")
+        attest = (f"measured from your swatch, attested by {g.attested_by}" if g.calibrated
+                  else "<b>NOT MEASURED</b> &mdash; no swatch was attested, so every centimetre "
+                       "here is illustrative")
         note = ("" if g.calibrated
                 else f"<br/><font size='8.5' color='#b45309'>{g.note}</font>")
         story.append(Paragraph(
-            f"Gauge: {g.stitches_per_10cm} sts x {g.rows_per_10cm} rows / 10 cm ({tag}).<br/>"
+            f"Gauge: {g.stitches_per_10cm} sts x {g.rows_per_10cm} rows / 10 cm ({attest}).<br/>"
             f"Widest diameter: ~{dims.widest_diameter_cm:.2f} cm ({lo:.2f}&ndash;{hi:.2f} cm), "
             f"from the widest round's circumference.<br/>"
             f"Worked height: ~{dims.height_cm:.2f} cm ({hlo:.2f}&ndash;{hhi:.2f} cm) &mdash; "
@@ -200,11 +215,12 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
             story.append(Paragraph(f"&middot; {q}", st["warn"]))
 
     story.append(PageBreak())
-    story.append(Paragraph("Stitch chart" + (" &amp; profile" if profile_path else ""), st["h"]))
+    story.append(Paragraph("Count charts" + (" &amp; cross-section" if profile_path else ""),
+                           st["h"]))
     story.append(_scaled_image(chart_path, 130 * mm, 105 * mm))
-    story.append(Paragraph("Counts per row, engine-verified. A count profile, not a stitch "
-                           "chart: it shows how many stitches a row leaves, not where they sit.",
-                           st["cap"]))
+    story.append(Paragraph("Counts per row, engine-verified. A count chart, not a stitch chart: "
+                           "it shows how many stitches a row leaves, not where they sit or what "
+                           "shape the piece makes.", st["cap"]))
     if profile_path:
         story.append(Spacer(1, 6))
         story.append(_scaled_image(profile_path, 105 * mm, 95 * mm))
@@ -221,12 +237,19 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
         story.append(Paragraph(heading, st["h"]))
         for comp in comps:
             qty = f" (make {comp.quantity})" if comp.quantity > 1 else ""
-            hk = f" &mdash; hook {comp.hook} mm" if comp.hook else ""
+            hk = ""
+            if comp.hook:
+                hk = f" &mdash; hook {comp.hook} mm" + (
+                    "" if comp.hook_origin == "source" else " (inferred)")
             story.append(Paragraph(f"{comp.name}{qty}{hk}", st["h3"]))
             for note in comp.notes:
                 story.append(Paragraph(f"&#9656; {note}", st["small"]))
             if comp.kind != "verified":
-                items = [ListItem(Paragraph(s, st["body"])) for s in comp.steps]
+                items = []
+                for s in comp.steps:
+                    why = (f"<br/><font size='8' color='#6b7280'>why: {s.why}</font>"
+                           if s.why else "")
+                    items.append(ListItem(Paragraph(f"{s.text}{tag(s.origin)}{why}", st["body"])))
                 if items:
                     story.append(ListFlowable(items, bulletType="bullet", start="square"))
                 continue
@@ -270,10 +293,14 @@ def build_pdf(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | Non
                f"{', '.join(cov.operations)}." if cov.operations else ""),
             st["body"]))
     story.append(Paragraph(
-        "<b>Fidelity to source:</b> not machine-checkable &mdash; see Provenance and the open "
-        "questions. A green arithmetic verdict does not certify that this is the pattern you "
-        "asked for.", st["body"]))
+        "<b>Fidelity to source:</b> see the Provenance tally &mdash; lines the framework wrote "
+        "are tagged where they appear. A green arithmetic verdict still does not certify that "
+        "this is the pattern you asked for.", st["body"]))
     story.append(Spacer(1, 6))
+    story.append(Paragraph("Verification appendix &mdash; engine audit", st["h3"]))
+    story.append(Paragraph("Internal working, not part of the instructions: every row the "
+                           "engine re-derived, and what it reconciled.", st["small"]))
+    story.append(Spacer(1, 4))
     story.append(_audit_table(audits))
     doc.build(story)
     return out_path

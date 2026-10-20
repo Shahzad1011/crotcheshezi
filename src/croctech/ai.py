@@ -2,9 +2,9 @@
 
 Integrity rule (this is the anti-hallucination contract): a provider returns
 design INTENT only -- which rounds, which shaping, colours, materials. It never
-supplies stitch totals; `engine.author_totals` computes them. The pipeline then
-re-validates, and any workability defect is fed back through `refine_pattern` in
-a bounded repair loop.
+supplies stitch totals (`engine.author_totals` computes them), never claims a
+fresh start, and never attests a gauge. The pipeline then re-validates, and any
+workability defect is fed back through `refine_pattern` in a bounded repair loop.
 
 The live Gemini/local adapters below are WRITTEN but NOT yet executed (they need
 a key / a running endpoint and their SDKs). Until we run them against a real
@@ -30,15 +30,29 @@ class PatternProvider(Protocol):
 def _draft_to_pattern(data: dict, provider: str = "ai") -> Pattern:
     """Convert a simplified design-intent draft dict into a validated Pattern.
 
-    Draft rounds carry shaping (repeat notation), never a claimed total; totals
-    are authored by the engine. A gauge is only built when the draft supplies
-    both numbers -- defaulting one would invent a finished size out of nothing.
+    The draft schema is deliberately *narrower* than the model: a provider states
+    shaping, colours and materials and nothing else. Fields it must not have are not
+    merely discouraged here --
+
+    * no stitch totals (`author_totals` computes them),
+    * no `foundation`/`starts_from`: a fresh start is granted by row position, so a
+      draft cannot abandon a row's stitches by declaring a new beginning,
+    * no gauge attestation: `calibrated` used to be copied out of this JSON, which
+      let a model print "measured from your swatch" for a number it invented,
+    * no hook default: omitting a hook used to invent 2.5 mm.
     """
     m = data.get("material", {})
     g = data.get("gauge") or {}
     sts, rows = g.get("stitches_per_10cm"), g.get("rows_per_10cm")
-    gauge = Gauge(stitches_per_10cm=float(sts), rows_per_10cm=float(rows),
-                  calibrated=bool(g.get("calibrated", False))) if sts and rows else None
+    gauge = None
+    gauge_note = ""
+    if sts and rows:
+        gauge = Gauge(stitches_per_10cm=float(sts), rows_per_10cm=float(rows),
+                      note=f"Quoted by the {provider} draft, not measured here. Nobody swatched "
+                           f"this yarn on this hook in this session, so every centimetre derived "
+                           f"from it is illustrative until a human attests it (gauge.attested_by).")
+    else:
+        gauge_note = " No gauge was supplied, so no finished size is claimed."
     rounds: list[RoundSpec] = []
     for i, rd in enumerate(data.get("rounds", []), start=1):
         repeat = rd.get("repeat", "")
@@ -47,10 +61,11 @@ def _draft_to_pattern(data: dict, provider: str = "ai") -> Pattern:
             RoundSpec(
                 index=rd.get("index", i),
                 color=rd.get("color"),
-                foundation=bool(rd.get("foundation", False)),
+                starts_from="magic_ring" if i == 1 else None,
+                origin="inferred",
                 cycle=cycle,
                 repeats=int(rd.get("repeats", 1)),
-                declared_total=0,  # author; engine overwrites
+                declared_total=0,  # engine overwrites in author_totals below
                 notes=list(rd.get("notes", [])),
             )
         )
@@ -59,12 +74,12 @@ def _draft_to_pattern(data: dict, provider: str = "ai") -> Pattern:
         item_type=data.get("item_type", "object"),
         description=data.get("description", ""),
         provenance=(f"Design intent drafted by the {provider} provider; no stitch total in this "
-                    f"document was authored by the model -- each was computed and cross-checked "
-                    f"by the engine." + ("" if gauge else " No gauge was supplied, so no "
-                                        "finished size is claimed.")),
+                    f"document was authored by the model -- each was computed by the engine."
+                    + gauge_note),
         material=Material(
             yarn=m.get("yarn", ""),
-            hook_mm=float(m.get("hook_mm", 2.5)),
+            hook_mm=m.get("hook_mm"),
+            hooks=[float(h) for h in m.get("hooks", [])],
             colors=list(m.get("colors", [])),
             notions=list(m.get("notions", [])),
             meters_per_gram=m.get("meters_per_gram"),
@@ -107,8 +122,9 @@ class RepairDemoProvider:
 
         p = build_pattern()
         # Inject over-worked Round 5: (5 sc, inc) x3 consumes 18 but starts with 15.
-        p.rounds[4].cycle = parse_repeat("5x, v")
-        p.rounds[4].repeats = 3
+        row5 = p.components[0].rounds[4]
+        row5.cycle = parse_repeat("5x, v")
+        row5.repeats = 3
         return author_totals(p)
 
     def refine_pattern(self, pattern: Pattern, errors: list[str]) -> Pattern:
@@ -151,11 +167,13 @@ class GeminiProvider:
             "You are a crochet designer. Return ONLY JSON describing design intent "
             "(name, item_type, description, material{yarn,hook_mm,colors,notions,"
             "meters_per_gram}, gauge{stitches_per_10cm,rows_per_10cm}, "
-            "rounds[{index,color,foundation,repeat,repeats,notes}]). Use repeat "
+            "rounds[{index,color,repeat,repeats,notes}]). Use repeat "
             "notation like '2x, v' (2 single crochets then an increase). Do NOT "
-            "compute stitch totals. Omit gauge entirely unless the request states a "
-            "measured swatch -- never estimate one, because the finished size is "
-            f"derived from it. Request: {request}"
+            "compute stitch totals, do NOT send a 'foundation' or 'calibrated' flag "
+            "(they are ignored), and do NOT describe a fresh start: the engine decides "
+            "where a new foundation is legal. Omit gauge entirely unless the request "
+            "states a measured swatch -- never estimate one, because the finished size "
+            f"is derived from it. Request: {request}"
         )
         return _draft_to_pattern(self._ask(prompt), self.name)
 

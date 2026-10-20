@@ -28,7 +28,7 @@ def main() -> None:
 
     # 2) Gate: a tampered total is refused, not rendered.
     tampered = build_pattern()
-    tampered.rounds[9].declared_total = 42
+    tampered.components[0].rounds[9].declared_total = 42
     assert validate(tampered), "gate broken"
     print("\nGate check: tampered Row 10 refused before rendering (verified).")
 
@@ -42,7 +42,7 @@ def main() -> None:
     )
     print("\n=== Rendered artefacts ===")
     print(f"Text pattern : {result.text_path}")
-    print(f"Stitch chart : {result.chart_path}")
+    print(f"Count chart  : {result.chart_path}")
     print(f"Profile chart: {result.profile_path}")
     print(f"HTML dossier : {result.html_path}  ({os.path.getsize(result.html_path)} bytes)")
     print(f"PDF design   : {result.pdf_path}  ({os.path.getsize(result.pdf_path)} bytes)")

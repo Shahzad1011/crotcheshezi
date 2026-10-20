@@ -74,7 +74,8 @@ def render_pattern(pattern: Pattern, outdir: str = "out", *,
     profile_path = None
     if pattern.gauge is not None:
         profile_path = render_silhouette(p_rows, p_audits, pattern.gauge, chart_title,
-                                         os.path.join(outdir, "profile.png"), p_blocks)
+                                         os.path.join(outdir, "profile.png"), p_blocks,
+                                         build_direction=primary.build_direction)
     html_path = render_html(pattern, audits, dims, yarn=yarn, cov=cov, chart_path=chart_path,
                             profile_path=profile_path, cover_image_path=cover_image_path,
                             cover_is_concept=cover_is_concept,

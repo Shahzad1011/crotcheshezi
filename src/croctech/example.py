@@ -8,7 +8,7 @@ claimed, a test fails -- so this pattern shipping "clean" is real evidence.
 
 from __future__ import annotations
 
-from .schema import Gauge, Material, Pattern, RoundSpec, StitchOp, parse_repeat
+from .schema import Component, Gauge, Material, Pattern, RoundSpec, StitchOp, parse_repeat
 
 RED = "red"
 WHITE = "white (or silver glitter)"
@@ -18,7 +18,8 @@ _SL = "Complete the row by making a sl st at the top of the first sc."
 
 def _even(index: int, count: int, color: str | None = None) -> RoundSpec:
     return RoundSpec(
-        index=index, color=color, cycle=[StitchOp(kind="sc", count=count)], declared_total=count,
+        index=index, color=color, join_sl=True,
+        cycle=[StitchOp(kind="sc", count=count)], declared_total=count,
         spec_text=f"1 ch. Starting from the top of the loop where you made the sl st, make "
                   f"{count} sc side by side. {_SL}")
 
@@ -27,7 +28,8 @@ def _shaped(index: int, gap: int, repeats: int, total: int,
             color: str | None = None) -> RoundSpec:
     """A shaping row: `gap` sc, then 2 sc in the next stitch, repeated `repeats` times."""
     return RoundSpec(
-        index=index, color=color, cycle=parse_repeat(f"{gap}x, v"), repeats=repeats,
+        index=index, color=color, join_sl=True,
+        cycle=parse_repeat(f"{gap}x, v"), repeats=repeats,
         declared_total=total,
         spec_text=f"1 ch. Starting from the top of the loop where you made the sl st, make "
                   f"{gap} sc side by side, 2 sc in the top of the next stitch; repeat this "
@@ -37,7 +39,8 @@ def _shaped(index: int, gap: int, repeats: int, total: int,
 
 def build_pattern() -> Pattern:
     rounds: list[RoundSpec] = [
-        RoundSpec(index=1, color=RED, foundation=True, cycle=[StitchOp(kind="sc", count=6)],
+        RoundSpec(index=1, color=RED, starts_from="magic_ring", join_sl=True,
+                  cycle=[StitchOp(kind="sc", count=6)],
                   declared_total=6,
                   spec_text="Leave some string. Make a magic ring. 1 ch. Make 6 single "
                             "crochets into the ring. Complete the row by making a sl st at "
@@ -71,8 +74,8 @@ def build_pattern() -> Pattern:
     return Pattern(
         name="Crochet Mini Santa-Hat Keychain",
         item_type="keychain",
-        description="A 15-round worked hat/brim disc in red with a white glitter brim, "
-                    "folded and finished with a pompom on a keychain clip.",
+        description="A 15-round mini hat worked from the tip down in red, with a white "
+                    "glitter brim, folded and finished with a pompom on a keychain clip.",
         material=Material(
             yarn="5-ply, 50% cotton / 50% acrylic, medium thickness",
             hook_mm=2.5,
@@ -80,6 +83,9 @@ def build_pattern() -> Pattern:
             notions=["keychain clip", "small pompom", "glue", "scissors"],
             meters_per_gram=3.2,
         ),
+        provenance="Row wording transcribed from the written pattern you supplied; the "
+                   "framework added no instruction that is not in it. The work direction "
+                   "(tip down) is inferred from your own row order and is marked as such.",
         abbreviations={
             "ch": "Chain",
             "sc": "Single crochet",
@@ -89,11 +95,18 @@ def build_pattern() -> Pattern:
             "v": "2 single crochets in the top of the next stitch (increase)",
         },
         gauge=Gauge(
-            stitches_per_10cm=30, rows_per_10cm=36, calibrated=False,
+            stitches_per_10cm=30, rows_per_10cm=36,
             note="ASSUMED gauge. You gave yarn and hook but no swatch, and no swatch means no "
                  "measured size. 30 sts x 36 rows / 10 cm is a typical tight-tension amigurumi "
                  "gauge on 2.5 mm with 5-ply, so treat every centimetre below as illustrative. "
                  "Work a 10 x 10 cm swatch, count it, and re-run to make these exact.",
         ),
-        rounds=rounds,
+        components=[Component(
+            name="Hat", kind="verified", rounds=rounds,
+            # Inference, stated as one: row 1 is the magic ring at the crown and the last
+            # white rows are the brim, so the profile must be drawn tip-up, not brim-up.
+            build_direction="from_tip",
+            notes=[("Worked from the tip down (inferred from your own wording: the last rows "
+                    "are the brim you fold, and row 1 is the ring at the top).")]),
+        ],
     )

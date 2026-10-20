@@ -25,16 +25,16 @@ def test_every_round_reconciles():
 
 def test_engine_catches_wrong_total():
     p = build_pattern()
-    p.rounds[4].declared_total = 99  # tamper: claim 99 instead of the real 18
+    p.components[0].rounds[4].declared_total = 99  # tamper: claim 99 instead of the real 18
     errors = validate(p)
-    assert any("Keychain R5" in e for e in errors), errors
+    assert any("Hat R5" in e for e in errors), errors
 
 
 def test_engine_catches_unworkable_round():
     p = build_pattern()
     # increase the cycle so it consumes more stitches than the round started with
-    p.rounds[5].cycle = parse_repeat("sc, inc")
-    p.rounds[5].repeats = 20
+    p.components[0].rounds[5].cycle = parse_repeat("sc, inc")
+    p.components[0].rounds[5].repeats = 20
     errors = validate(p)
     assert any("consume" in e for e in errors), errors
 

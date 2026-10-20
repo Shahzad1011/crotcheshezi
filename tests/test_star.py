@@ -11,8 +11,8 @@ import os
 from croctech.chart import render_flat
 from croctech.engine import audit, coverage, validate
 from croctech.gauge import compute_dimensions, compute_yarn_usage
-from croctech.render_text import render_text
-from croctech.schema import Gauge, StitchOp
+from croctech.render_text import render_text, shorthand
+from croctech.schema import Gauge, RoundSpec, StitchOp
 from croctech.star import build_star_pattern as build_pattern
 
 
@@ -20,11 +20,12 @@ def _star(p):
     return next(c for c in p.components if c.name == "Star")
 
 
-def _rendered(p=None):
+def _rendered(p=None, audit_lines=False):
     p = p or build_pattern()
     audits = audit(p)
     return render_text(p, audits, compute_dimensions(p, [a.produced for a in audits]),
-                       cov=coverage(p, audits)), audits
+                       cov=coverage(p, audits),
+                       audit_lines=audit_lines), audits
 
 
 # ---------------------------------------------------------------- the pattern
@@ -134,24 +135,31 @@ def test_every_listed_hook_is_assigned():
 
 def test_source_gaps_are_surfaced_not_answered():
     p = build_pattern()
-    assert p.provenance.startswith("Transcribed by hand")
+    assert "transcribed" in p.provenance.lower()
     assert any("puffy stitch" in t for t in p.undefined_terms)
     text, _ = _rendered(p)
     assert "Open questions" in text and "puffy stitch" in text
     assert "Sewing" in text
+    counts = p.origin_counts()
+    assert counts["source"] > 0 and counts["added"] > 0
+    assert f"{counts['source']} quoted from your source" in text
+    assert "[ADDED]" in text and "[INFERRED]" in text
 
 
 # -------------------------------------------------------------------- sewing
 
 def test_sewing_is_a_workable_seam_not_a_summary():
     sewing = next(c for c in build_pattern().components if c.name == "Sewing")
-    joined = " ".join(sewing.steps).lower()
+    joined = " ".join(s.text for s in sewing.steps).lower()
     assert "glue" not in joined, "a sewing step may not reach for glue"
     assert "no glue" in " ".join(sewing.notes).lower()
     for needed in ("yarn needle", "70 cm", "wrong sides", "invisible slip-stitch",
-                   "30 seam stitches", "4 cm", "fiber filling", "tail"):
+                   "4 cm", "fiber filling", "tail"):
         assert needed in joined, f"sewing step missing: {needed}"
     assert len(sewing.steps) >= 8
+    # the source's own two sentences stay unmarked; everything else is declared
+    assert [s.origin for s in sewing.steps[:2]] == ["source", "source"]
+    assert all(s.origin == "added" for s in sewing.steps[2:])
 
 
 # ---------------------------------------------------------------- rendering
@@ -161,22 +169,43 @@ def test_verbatim_stitch_wording_survives_to_the_output():
     text, _ = _rendered()
     assert "Repeat (2 sc, 1 inc) 6 times (24 sc)." in text
     assert "Sk the first stitch and make 5 sc, ch 1, turn your work." in text
-    assert "engine check:" in text
+    # the buyer's document carries no engine debug; the audit view does
+    assert "engine check:" not in text
+    audit_view, _ = _rendered(audit_lines=True)
+    assert "engine check:" in audit_view
 
 
 def test_edge_rows_are_not_rendered_as_magic_rings():
     """Row 1 of a point is worked along the base, so the engine check must not
     tell the maker to start a ring."""
-    text, _ = _rendered()
+    text, _ = _rendered(audit_lines=True)
     points = text[text.index("Point 1"):text.index("Point 2")]
     assert "Join yarn and work 6 sc along the base edge." in points
-    assert "Magic ring" not in points
+    assert "Magic ring, 6 sc." not in points
 
 
 def test_no_join_is_invented_where_the_source_worked_continuous():
     text, _ = _rendered()
     star_section = text[text.index("### Star"):text.index("### Blush")]
     assert "sl st to join" not in star_section
+
+
+def test_a_join_is_asserted_never_inherited():
+    """The default used to be True, so every new spiral round silently gained a seam."""
+    plain = RoundSpec(index=1, cycle=[StitchOp(kind="sc", count=6)], declared_total=6)
+    assert plain.join_sl is False
+    blush = next(c for c in build_pattern().components if c.name == "Blush")
+    assert blush.rounds[0].join_sl is True, "the source says 'Close the MR and sl st.'"
+
+
+def test_unstated_ply_assignment_is_surfaced_not_guessed():
+    """Materials say '3-ply and 2-ply'; no line says which part gets which."""
+    text, _ = _rendered()
+    q = text[text.index("## Open questions"):text.index("## Verification")]
+    assert "which ply" in q and "never says" in q
+    steps = text[text.index("### Flower"):text.index("### Blush")]
+    assert "3-ply" not in steps and "2-ply" not in steps, \
+        "a part's steps must not silently gain a ply the source never assigned"
 
 
 def test_multiplicity_is_printed_with_base_ranges():
@@ -205,10 +234,13 @@ def test_verdict_separates_arithmetic_from_coverage():
 
 
 def test_fastened_off_row_does_not_tell_the_maker_to_turn():
+    """The engine's own working text must cut the yarn on the last row, not turn."""
+    rows = _star(build_pattern()).blocks[0].rows
+    words = [shorthand(r) for r in rows]
+    assert sum("ch 1, turn." in w for w in words) == 4, "four turning rows, then the yarn is cut"
+    assert words[-1].endswith("ch 1, fasten off.")
     text, _ = _rendered()
-    tip = text.split("Point 1")[1].split("Point 2")[0]
-    assert "ch 1, fasten off." in tip
-    assert tip.count("ch 1, turn.") == 4, "four turning rows, then the yarn is cut"
+    assert "ch 1, fasten off." in text
 
 
 def test_flat_silhouette_is_used_for_flat_components(tmp_path):

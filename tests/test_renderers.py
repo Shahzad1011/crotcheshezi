@@ -7,6 +7,7 @@ from __future__ import annotations
 import os
 
 from croctech.ai import _draft_to_pattern
+from croctech.chart import row_bands
 from croctech.pipeline import render_pattern
 from croctech.star import build_star_pattern
 
@@ -25,11 +26,14 @@ def _read(path: str) -> str:
 
 
 def test_ai_draft_without_gauge_does_not_invent_one():
-    """A missing gauge used to default to 30/36, which printed a fake size."""
+    """A missing gauge used to default to 30/36, which printed a fake size. The
+    draft's `foundation: true` is read the same way: as nothing."""
     p = _draft_to_pattern(_DRAFT, "test")
     assert p.gauge is None
     assert "no finished size is claimed" in p.provenance
     assert p.material.hook_mm == 3.0
+    assert p.components[0].rounds[0].claims_fresh_start
+    assert not p.components[0].rounds[1].claims_fresh_start
 
 
 def test_ai_draft_with_a_real_gauge_keeps_it():
@@ -87,3 +91,37 @@ def test_header_badge_is_scoped_to_arithmetic(tmp_path):
     assert "0 stitch-math errors" in badge
     assert "50% of parts stitch-modelled" in badge, badge
     assert 'class="warn"' in badge, "partial coverage must not render as a plain green pass"
+
+
+def test_the_pattern_document_carries_no_engine_debug(tmp_path):
+    """pattern.md is what a maker crochets from; the dossier is what an auditor reads."""
+    r = render_pattern(build_star_pattern(), str(tmp_path))
+    md, htm = _read(r.text_path), _read(r.html_path)
+    assert "engine check:" not in md
+    assert "[OK]" not in md and "(OK)" not in md
+    assert "Point 1 -- base sts 1-6" in md
+    # the same rows in the audit view do show the derivation
+    assert "engine check:" in htm
+
+
+def test_every_added_line_is_tagged_in_both_formats(tmp_path):
+    r = render_pattern(build_star_pattern(), str(tmp_path))
+    md, htm = _read(r.text_path), _read(r.html_path)
+    counts = r.pattern.origin_counts()
+    body = md[md.index("## Pattern: parts"):md.index("## Open questions")]
+    assert body.count("[ADDED]") == counts["added"]
+    assert body.count("[INFERRED]") == 0, "the star's rows are the author's own wording"
+    assert body.count("(inferred)") == sum(1 for c in r.pattern.components
+                                           if c.hook and c.hook_origin == "inferred")
+    assert "class='orig added'" in htm or "class=\"orig added\"" in htm
+    assert f"{counts['source']} quoted from your source" in md
+
+
+def test_a_tip_down_piece_is_drawn_tip_up(tmp_path):
+    """Round 1 of the hat is the crown; stacking rows in work order drew the hat
+    upside down and the object inverted, like a bucket."""
+    base = row_bands(3, 1.0, "from_base")
+    tip = row_bands(3, 1.0, "from_tip")
+    assert base[0][0] == 0.0 and tip[0][1] == 3.0
+    assert tip == [(2.0, 3.0), (1.0, 2.0), (0.0, 1.0)]
+    assert row_bands(3, 1.0, None) == base, "an unknown direction must not claim a flip"

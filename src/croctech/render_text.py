@@ -1,7 +1,13 @@
 """Render a validated pattern into human-readable text, organised by component.
 
-Repeated blocks are expanded per instance with their base-stitch ranges, so the
-multiplicity is on the page and checkable rather than summarised in a sentence.
+The maker-facing document contains instructions and nothing else. The engine's
+working text, the per-row status and the audit table belong to the audit view
+(`audit_lines=True`, used by the HTML dossier and the PDF appendix), because a
+customer pattern that carries `engine check:` lines is a debug log wearing a
+pattern's clothes.
+
+Every line the framework wrote rather than transcribed is tagged, so a reader can
+tell the author's words from the expansion of them.
 """
 
 from __future__ import annotations
@@ -19,6 +25,12 @@ _START_WORD = {
     "sl_knot": "Slip knot, work {n} sc.",
 }
 
+_ORIGIN_TAG = {"source": "", "inferred": " [INFERRED]", "added": " [ADDED]"}
+
+
+def tag(origin: str) -> str:
+    return _ORIGIN_TAG.get(origin, "")
+
 
 def shorthand(rnd) -> str:
     """Engine-derived working text, used when the author supplied no wording.
@@ -27,7 +39,7 @@ def shorthand(rnd) -> str:
     magic ring for a row that is worked along an edge is the wrong action, not a
     stylistic choice.
     """
-    if rnd.foundation:
+    if rnd.claims_fresh_start:
         body = _START_WORD[rnd.starts_from].format(n=rnd.declared_total)
     elif rnd.cycle:
         seg = ""
@@ -46,18 +58,19 @@ def shorthand(rnd) -> str:
     return body.strip()
 
 
-def _round_line(rnd, a: RoundAudit, indent: str = "  ") -> list[str]:
-    """The author's own stitch wording is the instruction of record; the engine's
-    independent count is printed beside it as the cross-check."""
-    status = "OK" if a.ok else "ERROR"
+def _round_line(rnd, a: RoundAudit, indent: str = "  ", audit_lines: bool = False) -> list[str]:
+    """In the maker's document, the row is its own wording plus its count. The
+    engine's independent derivation is the audit view's business."""
+    work = shorthand(rnd)
+    text = rnd.spec_text or work
+    status = f" ({'OK' if a.ok else 'ERROR'})" if audit_lines else ""
     colr = f"  // {rnd.color}" if rnd.color else ""
     head = f"{indent}Row {rnd.index}" + (f" — {rnd.label}" if rnd.label else "") + ": "
-    if rnd.spec_text:
-        main = f"{head}{rnd.spec_text} [{a.produced} sts] ({status}){colr}"
-        check = (f"{indent}    engine check: {shorthand(rnd)} -> {a.produced} sts "
-                 f"(declared {a.declared_total})")
-        return [main, check]
-    return [f"{head}{shorthand(rnd)} [{a.produced} sts] ({status}){colr}"]
+    out = [f"{head}{text} [{a.produced} sts]{status}{colr}{tag(rnd.origin)}"]
+    if audit_lines and rnd.spec_text:
+        out.append(f"{indent}    engine check: {work} -> {a.produced} sts "
+                   f"(declared {a.declared_total})")
+    return out
 
 
 def _open_questions(pattern: Pattern) -> list[str]:
@@ -70,19 +83,65 @@ def _open_questions(pattern: Pattern) -> list[str]:
     return q
 
 
-def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | None,
-                yarn: YarnUsage | None = None, cov: Coverage | None = None) -> str:
+def _provenance_lines(pattern: Pattern) -> list[str]:
+    """The provenance paragraph is allowed to claim only what the tally can back."""
+    counts = pattern.origin_counts()
+    lines = ["## Provenance", f"- {pattern.provenance}"]
+    lines.append(f"- Tally of instruction lines: {counts['source']} quoted from your source, "
+                 f"{counts['inferred']} inferred, {counts['added']} added by the framework. "
+                 f"Every non-source line is tagged [INFERRED] or [ADDED] where it appears.")
+    return lines
+
+
+def _materials_lines(pattern: Pattern) -> list[str]:
     m = pattern.material
+    hooks = ", ".join(f"{h} mm" for h in pattern.listed_hooks) or "not stated in the source"
+    colours = ", ".join(m.colors) or "not stated in the source (choose yours)"
+    lines = ["## Materials", f"- Yarn: {m.yarn or 'not stated in the source'}", f"- Hooks: {hooks}",
+             f"- Colours: {colours}", f"- Notions: {', '.join(m.notions) or 'not stated'}"]
+    assigned = [f"{c.name} {c.hook} mm" + ("" if c.hook_origin == "source" else " (inferred)")
+                for c in pattern.components if c.hook]
+    if assigned:
+        lines.append("- Hook assignment: " + ", ".join(assigned))
+    return lines
+
+
+def _gauge_lines(pattern: Pattern, dims: Dimensions | None) -> list[str]:
+    g = pattern.gauge
+    lines = ["## Gauge & finished dimensions"]
+    if g is None or dims is None:
+        return lines + [
+            ("- No gauge supplied, so no finished size is claimed. A stitch gauge is the only "
+             "thing that turns stitch counts into centimetres, and inventing one would invent "
+             "the size too."),
+            ("- To get exact dimensions: work a 10 x 10 cm swatch in sc on the hook listed "
+             "above, count the stitches and rows, then re-run with that gauge.")]
+
+    lo, hi = dims.band(dims.widest_diameter_cm)
+    hlo, hhi = dims.band(dims.height_cm)
+    tag_txt = (f"measured from your swatch, attested by {g.attested_by}" if g.calibrated
+               else "NOT MEASURED -- no swatch was attested, so every centimetre here is "
+                    "illustrative")
+    lines.append(f"- Gauge: {g.stitches_per_10cm} sts x {g.rows_per_10cm} rows / 10 cm "
+                 f"({tag_txt})")
+    lines.append(f"- Widest diameter: ~{dims.widest_diameter_cm:.2f} cm [{lo:.2f}-{hi:.2f} cm] "
+                 "(from the widest round's circumference)")
+    lines.append(f"- Worked height: ~{dims.height_cm:.2f} cm [{hlo:.2f}-{hhi:.2f} cm] "
+                 "(rows x row gauge -- how tall the piece is as worked, not a 3D measurement)")
+    if not g.calibrated:
+        lines.append(f"- NOTE: {g.note}")
+    return lines
+
+
+def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | None,
+                yarn: YarnUsage | None = None, cov: Coverage | None = None,
+                audit_lines: bool = False) -> str:
     lines: list[str] = [f"# {pattern.name}", "", pattern.description, ""]
 
     if pattern.provenance:
-        lines += ["## Provenance", f"- {pattern.provenance}", ""]
+        lines += _provenance_lines(pattern) + [""]
 
-    lines.append("## Materials")
-    lines += [f"- Yarn: {m.yarn}",
-              f"- Hooks: {', '.join(f'{h} mm' for h in pattern.listed_hooks)}",
-              f"- Colours: {', '.join(m.colors)}",
-              f"- Notions: {', '.join(m.notions)}", ""]
+    lines += _materials_lines(pattern) + [""]
 
     if pattern.abbreviations:
         lines.append("## Abbreviations")
@@ -90,27 +149,7 @@ def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
             lines.append(f"- {abbr} = {meaning}")
         lines.append("")
 
-    lines.append("## Gauge & finished dimensions")
-    g = pattern.gauge
-    if g is None or dims is None:
-        lines.append("- No gauge supplied, so no finished size is claimed. A stitch gauge is "
-                     "the only thing that turns stitch counts into centimetres, and inventing "
-                     "one would invent the size too.")
-        lines.append("- To get exact dimensions: work a 10 x 10 cm swatch in sc on the hook "
-                     "listed above, count the stitches and rows, then re-run with that gauge.")
-    else:
-        lo, hi = dims.band(dims.widest_diameter_cm)
-        hlo, hhi = dims.band(dims.height_cm)
-        tag = ("measured from your swatch" if g.calibrated
-               else "ASSUMED, not measured from a swatch")
-        lines += [f"- Gauge: {g.stitches_per_10cm} sts x {g.rows_per_10cm} rows / 10 cm ({tag})",
-                  (f"- Widest diameter: ~{dims.widest_diameter_cm:.2f} cm "
-                   f"[{lo:.2f}-{hi:.2f} cm] (from the widest round's circumference)"),
-                  (f"- Worked height: ~{dims.height_cm:.2f} cm [{hlo:.2f}-{hhi:.2f} cm] "
-                   "(rows x row gauge -- how tall the piece is as worked, not a 3D measurement)")]
-        if not g.calibrated:
-            lines.append(f"- NOTE: {g.note}")
-    lines.append("")
+    lines += _gauge_lines(pattern, dims) + [""]
 
     if yarn:
         lines.append("## Yarn usage (estimate)")
@@ -133,7 +172,10 @@ def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
         lines.append(f"\n## {heading}")
         for comp in comps:
             qty = f" (make {comp.quantity})" if comp.quantity > 1 else ""
-            hk = f" [hook {comp.hook} mm]" if comp.hook else ""
+            hk = ""
+            if comp.hook:
+                hk = f" [hook {comp.hook} mm]" + ("" if comp.hook_origin == "source"
+                                                  else " (inferred)")
             lines.append(f"\n### {comp.name}{qty}{hk}")
             for note in comp.notes:
                 mark = "!" if note.startswith(("Open question", "Note:")) else ">"
@@ -141,7 +183,9 @@ def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
 
             if comp.kind != "verified":
                 for s in comp.steps:
-                    lines.append(f"  - {s}")
+                    lines.append(f"  - {s.text}{tag(s.origin)}")
+                    if s.why:
+                        lines.append(f"      why: {s.why}")
                 continue
 
             for line in print_rows(comp, by_comp.get(comp.name, [])):
@@ -150,7 +194,8 @@ def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
                                  + ("  (join the yarn to these stitches)"
                                     if line.join_note else ""))
                 indent = "    " if line.audit.instance is not None else "  "
-                lines += _round_line(line.rnd, line.audit, indent=indent)
+                lines += _round_line(line.rnd, line.audit, indent=indent,
+                                     audit_lines=audit_lines)
                 for n in line.rnd.notes:
                     lines.append(f"{indent}  > {n}")
 
@@ -178,8 +223,12 @@ def render_text(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
         if cov.operations:
             lines.append(f"- Finishing operations described in words, not counted: "
                          f"{', '.join(cov.operations)}")
-    lines.append("- Fidelity to source: not machine-checkable here -- see Provenance and the "
-                 "open questions above.")
+    lines.append("- Fidelity to source: see the Provenance tally -- every added or inferred "
+                 "line is tagged in the instructions themselves.")
+
+    if not audit_lines:
+        lines.append("")
+        return "\n".join(lines)
 
     lines.append("")
     lines.append(f"{'Component':<14}{'Row':>4}{'Inst':>5}{'Base sts':>10}"

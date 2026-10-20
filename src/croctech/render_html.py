@@ -29,10 +29,17 @@ def _esc(s) -> str:
     return html.escape(str(s))
 
 
+def _otag(origin: str) -> str:
+    """A visible, per-line provenance badge. `source` needs no badge: the default
+    is only trustworthy if the exceptions are marked."""
+    return "" if origin == "source" else f"<span class='orig {origin}'>{origin.upper()}</span>"
+
+
 def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | None, *,
                 yarn: YarnUsage | None = None, cov: Coverage | None = None,
                 chart_path: str | None = None, profile_path: str | None = None,
                 cover_image_path: str | None = None, cover_is_concept: bool = True,
+                audit_lines: bool = True,
                 out_path: str = "out/dossier.html") -> str:
     m = pattern.material
     g = pattern.gauge
@@ -62,13 +69,18 @@ def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
 
     def section(comp) -> str:
         qty = f' <span class="q">x{comp.quantity}</span>' if comp.quantity > 1 else ""
-        hk = f' <span class="q">hook {comp.hook} mm</span>' if comp.hook else ""
+        hk = ""
+        if comp.hook:
+            hk = (f' <span class="q">hook {comp.hook} mm</span>'
+                  + _otag(comp.hook_origin))
         body = "".join(
             f"<div class='cnotes'><small>{'! ' if n.startswith(('Open question', 'Note:')) else '› '}"
             f"{_esc(n)}</small></div>" for n in comp.notes)
         if comp.kind != "verified":
             return (f"<h3>{_esc(comp.name)}{qty}{hk}</h3>{body}<ul>"
-                    + "".join(f"<li>{_esc(s)}</li>" for s in comp.steps) + "</ul>")
+                    + "".join(f"<li>{_esc(s.text)}{_otag(s.origin)}"
+                              + (f"<br/><small>why: {_esc(s.why)}</small>" if s.why else "")
+                              + "</li>" for s in comp.steps) + "</ul>")
         lis = []
         for line in print_rows(comp, by_comp.get(comp.name, [])):
             if line.block_header:
@@ -76,12 +88,14 @@ def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
                 lis.append(f"<li class='blk'><b>{_esc(line.block_header)}{join}</b></li>")
             r, a = line.rnd, line.audit
             label = f" — {_esc(r.label)}" if r.label else ""
-            status = f"<span class='{'ok' if a.ok else 'bad'}'>[{'OK' if a.ok else 'ERROR'}]</span>"
+            status = (f"<span class='{'ok' if a.ok else 'bad'}'>[{'OK' if a.ok else 'ERROR'}]</span>"
+                      if audit_lines else "")
             colr = f"<span class='colr'>{_esc(r.color or '')}</span>"
             check = (f"<br/><small>engine check: {_esc(shorthand(r))} &rarr; {a.produced} sts "
-                     f"(declared {a.declared_total})</small>") if r.spec_text else ""
+                     f"(declared {a.declared_total})</small>") if (r.spec_text and
+                                                                   audit_lines) else ""
             main = (f"<b>R{r.index}</b>{label} — {_esc(r.spec_text or shorthand(r))} "
-                    f"<span class='cnt'>[{a.produced} sts]</span> {status}")
+                    f"<span class='cnt'>[{a.produced} sts]</span> {status}{_otag(r.origin)}")
             notes = "".join(f"<br/><small>› {_esc(n)}</small>" for n in r.notes)
             lis.append(f"<li>{colr}{main}{check}{notes}</li>")
         return f"<h3>{_esc(comp.name)}{qty}{hk}</h3>{body}<ul>" + "".join(lis) + "</ul>"
@@ -110,12 +124,13 @@ def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
     else:
         lo, hi = dims.band(dims.widest_diameter_cm)
         hlo, hhi = dims.band(dims.height_cm)
-        tag = ("measured from your swatch" if g.calibrated
-               else "<b style='color:#b45309'>ASSUMED</b>, not measured from a swatch")
+        attest = (f"measured from your swatch, attested by {_esc(g.attested_by)}" if g.calibrated
+                  else "<b style='color:#b45309'>NOT MEASURED</b> &mdash; no swatch was attested, "
+                       "so every centimetre here is illustrative")
         gauge_html = (
             "<section><h2>Gauge &amp; dimensions</h2><div class=\"grid\">"
             f"<div class=\"kv\"><b>Gauge</b>: {g.stitches_per_10cm} sts x {g.rows_per_10cm} "
-            f"rows / 10 cm ({tag})<br/><small>{_esc(g.note)}</small></div>"
+            f"rows / 10 cm ({attest})<br/><small>{_esc(g.note)}</small></div>"
             f"<div class=\"kv\"><b>Widest diameter</b>: ~{dims.widest_diameter_cm:.2f} cm "
             f"({lo:.2f}–{hi:.2f} cm), from the widest round's circumference"
             f"<br/><b>Worked height</b>: ~{dims.height_cm:.2f} cm ({hlo:.2f}–{hhi:.2f} cm)"
@@ -128,8 +143,15 @@ def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
             f"<div class=\"kv\"><b>{_esc(k)}</b> = {_esc(v)}</div>"
             for k, v in pattern.abbreviations.items()) + "</div></section>")
 
-    prov_html = (f"<section><h2>Provenance</h2><p>{_esc(pattern.provenance)}</p></section>"
-                 if pattern.provenance else "")
+    prov_html = ""
+    if pattern.provenance:
+        counts = pattern.origin_counts()
+        prov_html = (
+            "<section><h2>Provenance</h2><p>" + _esc(pattern.provenance) + "</p>"
+            f"<p><small>Tally of instruction lines: <b>{counts['source']}</b> quoted from your "
+            f"source, <b>{counts['inferred']}</b> inferred, <b>{counts['added']}</b> added by the "
+            "framework. Lines that are not yours carry the tag you see next to them.</small></p>"
+            "</section>")
 
     questions = _open_questions(pattern)
     questions_html = ("<section><h2>Open questions — gaps in the source</h2><ul>"
@@ -163,7 +185,9 @@ def render_html(pattern: Pattern, audits: list[RoundAudit], dims: Dimensions | N
             coverage_html += (f"<p><small>Finishing operations described in words, not counted: "
                               f"{_esc(', '.join(cov.operations))}.</small></p>")
 
-    hooks = ", ".join(f"{h} mm" for h in pattern.listed_hooks)
+    hooks = (", ".join(f"{h} mm" for h in pattern.listed_hooks)
+             or "not stated in the source")
+    colours = (", ".join(m.colors) or "not stated in the source (choose yours)")
 
     # The badge is scoped to arithmetic: it means "every count reconciles", not
     # "the whole ornament was checked" -- coverage is stated next to it.
@@ -184,7 +208,7 @@ header{{background:#fff;border-bottom:3px solid var(--accent);padding:24px;displ
 align-items:center;flex-wrap:wrap}}header img{{max-height:140px;border-radius:12px;border:1px solid var(--line)}}
 h1{{margin:0;font-size:24px;color:var(--accent)}}.sub{{color:var(--muted)}}
 .stamp{{font-weight:700}}.ok{{color:#16a34a;font-weight:700}}.bad{{color:#dc2626;font-weight:700}}
-.warn{{color:#b45309}}.cap{{font-size:11.5px;color:var(--muted)}}
+.warn{{color:#b45309}}.orig{{font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;vertical-align:1px}}.orig.added{{background:#fef3c7;color:#92400e}}.orig.inferred{{background:#e0e7ff;color:#3730a3}}.cap{{font-size:11.5px;color:var(--muted)}}
 main{{max-width:1000px;margin:0 auto;padding:20px}}
 section{{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 20px;margin:16px 0}}
 h2{{margin:0 0 10px;font-size:16px}}h3{{margin:14px 0 6px;font-size:14px;color:var(--accent)}}
@@ -210,15 +234,15 @@ padding:4px 8px;border-radius:4px}}
 </header>
 <main>
 {prov_html}
-<section><h2>Materials</h2><div class="kv">{_esc(m.yarn)}<br/>Hooks: {hooks}<br/>
-Colours: {_esc(', '.join(m.colors))}<br/>Notions: {_esc(', '.join(m.notions))}</div>
-<p><small>Hook assignment: {_esc(', '.join(f'{c.name} {c.hook} mm' for c in pattern.components if c.hook) or 'not stated')}</small></p>
+<section><h2>Materials</h2><div class="kv">{_esc(m.yarn) or 'not stated'}<br/>Hooks: {hooks}<br/>Colours: {colours}<br/>Notions: {_esc(', '.join(m.notions)) or 'not stated'}</div>
+<p><small>Hook assignment: {_esc(', '.join(f'{c.name} {c.hook} mm' + ('' if c.hook_origin == 'source' else ' (inferred)') for c in pattern.components if c.hook) or 'not stated')}</small></p>
 </section>
 {abbr_html}
 {gauge_html}
 <section><h2>Charts</h2><div class="charts">{img(chart_path)}{img(profile_path)}</div>
-<p class="cap">Counts per row, engine-verified. A count profile, not a stitch chart: it shows how
-many stitches a row leaves, not where they sit.</p></section>
+<p class="cap">Counts per row, engine-verified. These are count charts, not stitch charts: they
+show how many stitches a row leaves, not where the stitches sit or what shape the piece
+makes.</p></section>
 {yarn_html}
 {questions_html}
 <section><h2>Pattern: parts</h2>{instr_parts}</section>

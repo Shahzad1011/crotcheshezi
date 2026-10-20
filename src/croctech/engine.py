@@ -1,14 +1,18 @@
 """The deterministic accuracy core.
 
 The engine re-derives every stitch count purely from the operations, threading
-start counts within each component (resetting at a new component and at any
-foundation round), and compares against whatever totals the author (human or AI)
-claimed. A mismatch is an error, not a warning -- this is the cross-verification
-that makes "0 stitch-math errors" a testable guarantee.
+start counts within each component, and compares against whatever totals the
+author (human or AI) claimed. A mismatch is an error, not a warning.
 
-Blocks are audited per instance, so a repeated sub-section (five star points) is
-checked for exactly exhausting its foundation. Without that, a row that works 6
-stitches out of 30 available passes a per-row audit while quietly abandoning 24.
+Three layers, because arithmetic alone was demonstrably not enough:
+
+* **Graph** -- every non-fresh row must work into stitches that exist, in order,
+  so an op cannot reach past the end of the row below.
+* **Position** -- a fresh start is *granted* (row 1, or the row after a
+  fasten-off), never claimed by a flag. This is what makes a 6-to-50-stitch
+  teleport impossible instead of merely suspicious.
+* **Geometry** -- a round that adds far more than the established shaping rate
+  ruffles, and now says so.
 """
 
 from __future__ import annotations
@@ -32,6 +36,10 @@ class RoundAudit:
     instance: int | None = None
     base_range: tuple[int, int] | None = None
     label: str | None = None
+    fresh: bool = False
+    flat: bool = False
+    width: float = 0.0
+    height: float = 0.0
 
 
 @dataclass
@@ -56,18 +64,41 @@ def compute_round(rnd: RoundSpec, start_count: int) -> tuple[int, int]:
     return consumed, produced
 
 
+def _walk_targets(comp: Component, rnd: RoundSpec, start: int,
+                  who: str) -> list[str]:
+    """Ordered stitch-graph check: walk the ops across the row below, position by
+    position. The sum alone cannot say *which* op reaches past the end.
+    """
+    issues: list[str] = []
+    cursor = 0
+    for op in rnd.expand():
+        if not op.consume:
+            continue
+        if cursor + op.consume > start:
+            issues.append(
+                f"{comp.name} R{who}: a {op.kind} works into stitch "
+                f"{cursor + 1}-{cursor + op.consume}, but the row below only has {start} "
+                f"stitches. Nothing exists there to work into.")
+            break
+        cursor += op.consume
+    return issues
+
+
 def _audit_row(comp: Component, rnd: RoundSpec, start: int,
                instance: int | None = None,
-               base_range: tuple[int, int] | None = None) -> RoundAudit:
+               base_range: tuple[int, int] | None = None,
+               fresh: bool = False) -> RoundAudit:
     consumed, produced = compute_round(rnd, start)
     issues: list[str] = []
     who = f"{rnd.index}" + (f".{instance}" if instance else "")
-    if rnd.foundation and instance is None:
+    if fresh:
         if produced != rnd.declared_total:
             issues.append(
                 f"{comp.name} R{who}: foundation creates {produced} sts but "
                 f"claims {rnd.declared_total}.")
     else:
+        # graph layer: every op must land on a real stitch of the row below
+        issues += _walk_targets(comp, rnd, start, who)
         if consumed != start:
             issues.append(
                 f"{comp.name} R{who}: instructions consume {consumed} sts but "
@@ -76,11 +107,34 @@ def _audit_row(comp: Component, rnd: RoundSpec, start: int,
             issues.append(
                 f"{comp.name} R{who}: stated total {rnd.declared_total} but the "
                 f"instructions actually make {produced}.")
+    seq = rnd.expand()
     return RoundAudit(
         component=comp.name, index=rnd.index, color=rnd.color, start_count=start,
         consumed=consumed, produced=produced, declared_total=rnd.declared_total,
         ok=not issues, issues=issues, instance=instance, base_range=base_range,
-        label=rnd.label)
+        label=rnd.label, fresh=fresh, flat=rnd.flat,
+        width=sum(op.width for op in seq), height=sum(op.height for op in seq))
+
+
+def _apply_growth_bounds(comp: Component, rows: list[RoundAudit]) -> None:
+    """Geometry: a shaped piece keeps roughly its established rate of increase.
+
+    A round that adds far more than that rate does not grow the shape, it ruffles.
+    This only became expressible once ops carried width/height in the IR.
+    """
+    growth = [a.produced - a.start_count for a in rows if not a.fresh and not a.flat]
+    if len(growth) < 4:
+        return
+    for i, g in enumerate(growth[3:], start=3):
+        rate = max(growth[:i])
+        if g > 2 * rate + 2:
+            row = rows[i]
+            row.issues.append(
+                f"{comp.name} R{row.index}: adds {g} sts to a {row.start_count}-stitch row, "
+                f"but this part's shaping rate so far is at most +{rate} per row. At this rate "
+                f"the fabric ruffles instead of flaring -- that is a shape error, not a count "
+                f"error.")
+            row.ok = False
 
 
 def _audit_block(comp: Component, block: Block, base_available: int
@@ -124,10 +178,14 @@ def _walk(pattern: Pattern) -> tuple[list[RoundAudit], list[BlockAudit]]:
         if comp.kind != "verified":
             continue
         start = 0
+        comp_rows: list[RoundAudit] = []
         for rnd in comp.rounds:
-            a = _audit_row(comp, rnd, start)
+            # a fresh start is granted by position, never by a flag on the row
+            a = _audit_row(comp, rnd, start, fresh=id(rnd) in comp.fresh_starts)
+            comp_rows.append(a)
             rows.append(a)
             start = a.produced
+        _apply_growth_bounds(comp, comp_rows)
         for block in comp.blocks:
             block_rows, ba = _audit_block(comp, block, start)
             rows.extend(block_rows)
@@ -239,14 +297,18 @@ def validate(pattern: Pattern) -> list[str]:
 
 def author_totals(pattern: Pattern) -> Pattern:
     """Fill each round's total from the engine's own computation (for AI drafts,
-    which must not assert totals). Workability is still validated afterwards."""
-    produced = {(a.component, a.index): a.produced for a in audit(pattern)}
+    which must not assert totals). Workability is still validated afterwards.
+
+    Keyed by position: `Component.all_rows` and the audit list are the same sequence
+    in the same order, so a row can never be handed another row's total.
+    """
+    rows, _ = _walk(pattern)
+    by_comp: dict[str, list[RoundAudit]] = {}
+    for a in rows:
+        by_comp.setdefault(a.component, []).append(a)
     for comp in pattern.components:
         if comp.kind != "verified":
             continue
-        rounds = [*comp.rounds, *(r for b in comp.blocks for r in b.rows)]
-        for rnd in rounds:
-            p = produced.get((comp.name, rnd.index))
-            if p is not None:
-                rnd.declared_total = p
+        for rnd, a in zip(comp.all_rows, by_comp.get(comp.name, [])):
+            rnd.declared_total = a.produced
     return pattern
