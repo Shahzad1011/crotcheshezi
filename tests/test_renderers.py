@@ -76,3 +76,14 @@ def test_concept_cover_is_labelled_not_presented_as_evidence(tmp_path):
     assert "not a render of this pattern" in html2.lower()
     assert os.path.getsize(r2.pdf_path) > os.path.getsize(r.pdf_path), \
         "the PDF caption should add content"
+
+
+def test_header_badge_is_scoped_to_arithmetic(tmp_path):
+    """A green "0 errors" stamp used to be the only verdict on the page, which
+    read as "the whole ornament is proven" while half the parts were prose.
+    """
+    htm = _read(render_pattern(build_star_pattern(), str(tmp_path)).html_path)
+    badge = htm.split('class="stamp">')[1].split("</div>")[0]
+    assert "0 stitch-math errors" in badge
+    assert "50% of parts stitch-modelled" in badge, badge
+    assert 'class="warn"' in badge, "partial coverage must not render as a plain green pass"
